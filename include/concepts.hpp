@@ -7,7 +7,7 @@
 namespace meta {
 
 template <bool... Bs>
-using all_of_t = std::is_same<std::integer_sequence<bool, true, Bs...>, std::integer_sequence<Bs..., true> >;
+using all_of_t = std::is_same<std::integer_sequence<bool, true, Bs...>, std::integer_sequence<bool, Bs..., true> >;
 
 namespace detail {
 
