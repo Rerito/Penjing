@@ -9,4 +9,12 @@ project(suffix-tree
     LANGUAGES CXX
 )
 
+# Only require C++14 for thirdparties
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparties)
+
+# ... But we do want C++17 for our own stuff
+set(CMAKE_CXX_STANDARD 17)
+add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
