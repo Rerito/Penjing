@@ -5,6 +5,16 @@
 
 #include <unordered_map>
 #include <list>
+#include <stdexcept>
+
+namespace detail {
+
+template <typename T>
+[[noreturn]] inline T throwing_factory() {
+    throw std::runtime_error("No such element in cache");
+}
+
+} // namespace detail
 
 template <typename Key, typename Value, typename Hash = std::hash<Key>, typename Eq = std::equal_to<Key> >
 class lru_cache {
@@ -37,7 +47,7 @@ private:
     void refresh_elem(list_iterator el) {
         elems_.splice(end(elems_), elems_, el);
         auto back_it = --elems_.end();
-        map_to_els[back_it->first] = back_it;
+        map_to_els_[back_it->first] = back_it;
     }
 
 public:
@@ -50,17 +60,21 @@ public:
             throw std::invalid_argument("k");
         }
         elems_.emplace_back(std::pair<Key, Value>(k, Value(CPPFWD(args)...)));
+        it = --end(elems_);
         prune();
     }
 
-    // Beware of the lifetime of the reference as it can be invalidated
     template <typename ElemFactory>
     Value& get(Key const& k, ElemFactory&& factory) {
-        auto& el = map_to_els[k];
+        auto& el = map_to_els_[k];
         if (el == list_iterator {}) {
             emplace(k, CPPFWD(factory)());
         }
         refresh_elem(el);
         return el->second;
+    }
+
+    Value& get(Key const& k) {
+        return get(k, &detail::throwing_factory<Value>);
     }
 };
