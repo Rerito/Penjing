@@ -1,14 +1,30 @@
 language: cpp
 
-os:
-  - linux
-  - osx
-  - windows
+addons:
+  apt:
+    source: ubuntu-toolchain-r-test
+    packages:
+      - g++-7
+      - valgrind
 
-install:
-  - mkdir -p build/Release
-  - mkdir -p build/Debug
+
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      env: CMAKE_GENERATOR="Unix Makefiles" BUILD_TYPE=Debug 
+      compiler: gcc
+    - os: linux
+      sudo: required
+      env: CMAKE_GENERATOR="Unix Makefiles" BUILD_TYPE=Release
+      compiler: gcc
+
+
 
 script:
-  - cd build/Release && cmake -DCMAKE_BUILD_TYPE=Release ../.. && cmake --build . --config Release
-  - cd build/Debug && cmake -DCMAKE_BUILD_TYPE=Debug ../.. && cmake --build . --config Debug
+  - cmake -H. -Bbuild
+          -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+          -G ${CMAKE_GENERATOR}
+          -DSANITIZE=${SANITIZE}
+  - cmake --build build --config ${BUILD_TYPE} -- -j2
+  - cd build && ctest
