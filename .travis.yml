@@ -1,0 +1,14 @@
+language: cpp
+
+os:
+  - linux
+  - osx
+  - windows
+
+install:
+  - mkdir -p build/Release
+  - mkdir -p build/Debug
+
+script:
+  - cd build/Release && cmake -DCMAKE_BUILD_TYPE=Release ../.. && cmake --build . --config Release
+  - cd build/Debug && cmake -DCMAKE_BUILD_TYPE=Debug ../.. && cmake --build . --config Debug
