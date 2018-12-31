@@ -21,6 +21,10 @@ matrix:
       compiler: gcc
 
 
+install:
+  - if [[ $TRAVIS_OS_NAME="linux" ]]; then
+      export CXX=g++-7;
+    fi
 
 script:
   - cmake -H. -Bbuild
