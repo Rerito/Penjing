@@ -9,6 +9,8 @@ project(suffix-tree
     LANGUAGES CXX
 )
 
+enable_testing()
+
 # Only require C++14 for thirdparties
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

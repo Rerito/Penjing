@@ -2,12 +2,14 @@
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_executable(
-    test
+    unittest
     test_lru_cache.cpp
     main.cpp
 )
 
 target_link_libraries(
-    test
+    unittest
     gtest_main
 )
+
+add_test(NAME AllUnitTests COMMAND unittest)
