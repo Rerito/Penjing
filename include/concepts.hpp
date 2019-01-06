@@ -2,7 +2,8 @@
 #pragma once
 
 #include <type_traits>
-#include <void_t.hpp>
+#include <utility> // for integer_sequence
+#include "void_t.hpp"
 
 namespace meta {
 
