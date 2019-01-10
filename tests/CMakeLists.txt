@@ -3,6 +3,7 @@
 add_executable(
     unittest
     test_lru_cache.cpp
+    test_disjoint_sets.cpp
     test_concepts
     main.cpp
 )
