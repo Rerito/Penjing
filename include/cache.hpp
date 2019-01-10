@@ -58,6 +58,16 @@ public:
     Value& get(Key const& k) {
         return get(k, &detail::throwing_factory<Value>);
     }
+
+    void erase(Key const& k) {
+        auto it = map_to_els_.find(k);
+        if (end(map_to_els_) != it) {
+            elems_.erase(it->second);
+            map_to_els_.erase(it);
+        } else {
+            throw std::invalid_argument("k");
+        }
+    }
 };
 
 
