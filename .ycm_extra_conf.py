@@ -36,6 +36,7 @@ def get_default_flags():
         '-I',
         '.',
         '-isystem', '/usr/local/include',
+        '-isystem', '/usr/include/c++/8/',
         '-isystem', '/usr/include'
     ]
     try:
