@@ -17,6 +17,13 @@ struct DisjointSetsTestCase : testing::Test {
     }
 };
 
+TEST_F(DisjointSetsTestCase, UnionByRank) {
+    sets_.make_union(1, 2);
+    ASSERT_EQ(1, sets_.find(1).rank);
+    sets_.make_union(1, 3);
+    ASSERT_EQ(1, sets_.find(1).rank);
+}
+
 TEST_F(DisjointSetsTestCase, MakeUnion) {
     sets_.make_union(1, 2);
     ASSERT_TRUE(sets_.is_in_same_set(1, 2));

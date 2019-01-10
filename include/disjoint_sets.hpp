@@ -41,7 +41,9 @@ void make_union(set_node& n1, set_node& n2) {
         bool switch_ref = n1.rank < n2.rank || (!KeepFirst && n1.rank == n2.rank);
         auto& n1_ = switch_ref ? n2 : n1;
         auto& n2_ = switch_ref ? n1 : n2;
-        ++n1_.rank;
+        if (n1_.rank == n2_.rank) {
+            ++n1_.rank;
+        }
         n2_.parent = &n1_;
     }
 }
