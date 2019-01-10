@@ -15,6 +15,7 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/include)
 add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparties)
 
 # ... But we do want C++17 for our own stuff

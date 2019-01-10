@@ -1,5 +1,4 @@
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_executable(
     unittest
@@ -10,7 +9,9 @@ add_executable(
 
 target_link_libraries(
     unittest
+    suffix_tree
     gtest_main
 )
+
 
 add_test(NAME AllUnitTests COMMAND unittest)
