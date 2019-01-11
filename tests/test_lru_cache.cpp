@@ -1,6 +1,6 @@
 
 #include "gtest/gtest.h"
-#include "lru_cache.hpp"
+#include "datastruct/lru_cache.hpp"
 
 struct LRUCacheTest : testing::Test {
     

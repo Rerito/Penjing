@@ -1,6 +1,6 @@
 
 #include "gtest/gtest.h"
-#include "disjoint_sets.hpp"
+#include "datastruct/disjoint_sets.hpp"
 
 struct DisjointSetsTestCase : testing::Test {
     disjoint_sets<int> sets_;

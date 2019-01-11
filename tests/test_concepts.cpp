@@ -1,8 +1,8 @@
 
 
 #include "gtest/gtest.h"
-#include "concepts.hpp"
-#include "has_size.hpp"
+#include "meta/concepts.hpp"
+#include "meta/has_size.hpp"
 #include <vector>
 
 struct ConceptsTest : testing::Test {
