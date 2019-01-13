@@ -35,7 +35,7 @@ public:
     using PruningPolicy::PruningPolicy;
 
     template <typename... Args>
-    void emplace(Key const& k, Args&&... args) {
+    auto& emplace(Key const& k, Args&&... args) {
         auto& it = map_to_els_[k];
         if (it != list_iterator {}) {
             throw std::invalid_argument("k");
@@ -43,6 +43,7 @@ public:
         elems_.emplace_back(std::pair<Key, Value>(k, Value(CPPFWD(args)...)));
         it = --end(elems_);
         PruningPolicy::prune(*this);
+        return it->second;
     }
 
     template <typename ElemFactory>
