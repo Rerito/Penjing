@@ -6,6 +6,7 @@ add_executable(
     test_disjoint_sets.cpp
     test_concepts.cpp
     test_memory.cpp
+    test_suffix_tree.cpp
     main.cpp
 )
 
