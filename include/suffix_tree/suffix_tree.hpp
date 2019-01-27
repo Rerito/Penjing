@@ -29,6 +29,7 @@ public:
     using char_type = typename String::value_type;
     using sview_type  = SView;
     using node_type   = suffix_tree_node<String, SView>;
+    using transition_type = typename node_type::transition_type;
     using hasher_type = StrHash;
     using string_cache_type = cache<size_t, string_type>;
 
@@ -41,16 +42,14 @@ public:
     template <typename... Args>
     void emplace(string_type str_in, Args&&... args) {
         using std::size;
-        container_cleaner<string_cache_type, size_t> clnr;
         if (end_token_ != str_in[size(str_in)-1]) {
             throw std::invalid_argument("The given string doesn't end with the end token of this tree");
         }
         size_t str_key = get_index(str_in);
         auto& str = str_cache_.emplace(str_key, std::move(str_in));
-        clnr.add_to_clean(str_key);
-        // We are now ready to perform insertion in the suffix tree
-        // Once this is done, we can finally add the payload.
-        clnr.clear();
+        deploy_suffixes(str);
+    }
+
     }
 
 private:
@@ -64,7 +63,7 @@ private:
         using std::size;
         using std::data;
         if (!size(sv)) {
-            return std::make_pair(n->find_transition(t).get().is_valid(), n);
+            return std::make_pair(n->find_transition(t).is_valid(), n);
         } else {
             auto& tr = n->find_transition(sv[0]);
             auto i_t = size(sv) + 1;
@@ -80,11 +79,14 @@ private:
                 auto r = std::make_unique<node_type>();
                 auto r_raw = r.get();
                 r->parent_ = n;
-                tr.dest_->parent = r_raw;
-                tr.get().sub_str_ = sview_type(data(tr.get().sub_str_), size(sv));
-                r->tr_[(tr.sub_str_[size(sv)])] = typename node_type::transition_type(
-                    std::move(tr.dest_),
-                    sview_type(data(tr.sub_str_) + size(sv), size(tr.sub_str_) - size(sv))
+                tr.dest_->parent_ = r_raw;
+                tr.sub_str_ = sview_type(data(tr.sub_str_), size(sv));
+                r->tr_.emplace(
+                    tr.sub_str_[size(sv)],
+                    typename node_type::transition_type(
+                        std::move(tr.dest_),
+                        sview_type(data(tr.sub_str_) + size(sv) + 1, size(tr.sub_str_) - size(sv) - 1)
+                    )
                 );
                 tr.dest_ = std::move(r);
                 return std::make_pair(false, r_raw);
@@ -109,18 +111,25 @@ private:
             // Let's leverage on that to create the correct leaf transition
             auto tr_sv_data = data(substr) + size(substr);
             auto tr_sv_size = size(whole_str) + data(whole_str) - tr_sv_data;
-            r->tr[substr.back()] = typename node_type::transition_type(
-                std::make_unique<node_type>(),
-                sview_type(tr_sv_data, tr_sv_size) // TODO keep track of actual string size...
+            r->tr_.emplace(
+                substr.back(),
+                typename node_type::transition_type(
+                    std::make_unique<node_type>(),
+                    sview_type(tr_sv_data, tr_sv_size) // TODO keep track of actual string size...
+                )
             );
             if (r_old != root_.get()) {
                 r_old->link_ = r;
             }
             r_old = r;
-            auto rp = canonize(n->link_, trunc_substr);
-            auto ep_r = test_and_split(rp.node_, rp.start_, substr.back());
-            r = ep_r.second;
-            is_endpoint = ep_r.first;
+            if (n->link_) {
+                auto rp = canonize(n->link_, trunc_substr);
+                auto ep_r = test_and_split(rp.node_, rp.start_, substr.back());
+                r = ep_r.second;
+                is_endpoint = ep_r.first;
+            } else {
+                is_endpoint = true;
+            }
         }
         return { n, substr };
     }
@@ -132,12 +141,12 @@ private:
         if (!size(substr)) {
             return { node, sview_type(psstr, 0) };
         }
-        auto tr = node->find_transition(*psstr);
+        std::reference_wrapper<transition_type> tr = node->find_transition(*psstr);
         size_t remainder = size(substr), delta;
         while((delta = size(tr.get().sub_str_)) < remainder) {
             remainder -= 1 + delta;
             psstr += 1 + delta;
-            node = tr.get().target();
+            node = tr.get().dest_.get();
             if (!remainder) {
                 break;
             }
@@ -146,37 +155,37 @@ private:
         return { node, sview_type(psstr, remainder) };
     }
 
-    void get_starting_node(string_type const& str, reference_point& active_point) {
+    void get_starting_node(reference_point& active_point) const {
         // Walk down the tree using `str`..., starting from `active_point.node`
         // This function is always called with active_point.start_ being a
         // string_view of str...
         using std::data;
         using std::size;
-        auto s_len = size(str);
-        auto end_str = data(str) + s_len;
+        auto s_len = size(active_point.start_);
+        auto end_str = data(active_point.start_) + s_len;
         bool s_ranout = false;
         while (!s_ranout) {
             auto start_ = data(active_point.start_);
             if (start_ >= end_str) {
                 break;
             }
-            auto tr = active_point.node_->find_transition(*start_);
-            if (!(tr.get().is_valid())) {
+            auto& tr = active_point.node_->find_transition(*start_);
+            if (!(tr.is_valid())) {
                 return;
             }
-            auto tr_view_ptr = data(tr.get().sub_str_);
-            auto end_view_ptr = tr_view_ptr + size(tr.get().sub_str_);
+            auto tr_view_ptr = data(tr.sub_str_);
+            auto end_view_ptr = tr_view_ptr + size(tr.sub_str_);
             for (++start_, ++tr_view_ptr;
                  start_ != end_str && tr_view_ptr != end_view_ptr;
                  ++start_, ++tr_view_ptr) {
                 if (*(start_) != *(tr_view_ptr)) {
-                    active_point.start_ = sview_type(start_, size(active_point.start_) - (start_ - active_point.start_));
+                    active_point.start_ = sview_type(start_, size(active_point.start_) - (start_ - data(active_point.start_)));
                     return;
                 }
-                active_point.start_ = sview_type(start_, size(active_point.start_) - (start_ - active_point.start_));
+                active_point.start_ = sview_type(start_, size(active_point.start_) - (start_ - data(active_point.start_)));
             }
             if (tr_view_ptr == end_view_ptr) {
-                active_point.node_ = tr.get().dest_;
+                active_point.node_ = tr.dest_.get();
             }
         }
         throw std::runtime_error("");
@@ -187,7 +196,7 @@ private:
         using std::size;
         auto whole_str = sview_type(data(str), size(str));
         reference_point active_point { root_.get(), whole_str };
-        get_starting_node(str, active_point);
+        get_starting_node(active_point);
         for (auto p = data(active_point.start_); p != data(str) + size(str) + 1; ++p) {
             active_point = update(
                 active_point.node_,

@@ -58,7 +58,7 @@ public:
 
 private:
     static transition_type& empty_transition() {
-        self_type empty_tr {};
+        static transition_type empty_tr(std::unique_ptr<self_type>(nullptr), sview_type(nullptr, 0));
         return empty_tr;
     }
 
