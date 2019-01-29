@@ -4,6 +4,9 @@
 
 #include <unordered_map>
 #include <memory>
+#include "utils/memory.hpp"
+
+namespace st {
 
 template  <typename String>
 struct string_bundle {
@@ -15,10 +18,11 @@ template <typename Node>
 struct transition {
     using node_type = Node;
     using sview_type = typename Node::sview_type;
-    std::unique_ptr<node_type> dest_;
+    using node_ptr = memory::custom_alloc_unique_ptr<node_type, typename node_type::allocator>;
+    node_ptr dest_;
     sview_type sub_str_;
 
-    transition(std::unique_ptr<node_type> p, sview_type const& sstr) : dest_(std::move(p)), sub_str_(sstr) {}
+    transition(node_ptr p, sview_type const& sstr) : dest_(std::move(p)), sub_str_(sstr) {}
     bool is_valid() const {
         return !!dest_;
     }
@@ -33,6 +37,7 @@ public:
     using string_type = String;
     using sview_type  = SView;
     using self_type = suffix_tree_node;
+    using allocator = std::allocator<self_type>;
     using transition_type = transition<self_type>;
 
     // Disable the copy for now...
@@ -68,3 +73,5 @@ private:
     // link
     std::unordered_map<char_type, transition<self_type> > tr_; // The transitions to child nodes
 };
+
+} // namespace st
