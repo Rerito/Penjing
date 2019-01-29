@@ -6,5 +6,8 @@ struct SuffixTreeTest : testing::Test {
 };
 
 TEST_F(SuffixTreeTest, CreateSTree) {
-    suffix_tree<> st('$');
+    st::suffix_tree<> stree('$');
+    stree.emplace("cacao$");
+    auto cao_substr = stree.is_substring("cao$");
+    ASSERT_TRUE(cao_substr);
 }

@@ -54,11 +54,24 @@ public:
         deploy_suffixes(str);
     }
 
-private:
+    bool is_substring(string_type const& str) {
+        using std::data;
+        using std::size;
+        reference_point rp { root_.get(), sview_type(data(str), size(str)) };
+        get_starting_node(rp);
+        return !!size(rp.start_);
+    }
 
+private:
+    
     struct reference_point {
         node_type *node_;
         sview_type start_;
+
+        template <typename T, typename U>
+        operator std::tuple<T&, U&> () {
+            return std::forward_as_tuple(node_, start_);
+        }
     };
 
     size_t get_index(string_type const& str) {
@@ -74,21 +87,25 @@ private:
         auto str_end = str_ptr + str_size;
         bool exhausted = !str_size;
         while (!exhausted) {
-           auto& tr = rp.node_->find_transition(*str_ptr);
-           auto trstr_ptr = data(tr.sub_str_) + 1;
-           ++str_ptr;
-           for (;
-                (trstr_ptr != data(tr.sub_str_) + size(tr.sub_str_)) &&
-                (str_ptr != str_end);
-                ++trstr_ptr, ++str_ptr) {
-               if (*trstr_ptr != *str_ptr) {
-                  break;
-               }
-           }
-           if (trstr_ptr == data(tr.sub_str_) + size(tr.sub_str_)) {
-              rp.node_ = tr.dest_.get();
-           }
-           exhausted = (str_ptr == str_end);
+            auto& tr = rp.node_->find_transition(*str_ptr);
+            if (tr.is_valid()) {
+                auto trstr_ptr = data(tr.sub_str_) + 1;
+                ++str_ptr;
+                for (;
+                    (trstr_ptr != data(tr.sub_str_) + size(tr.sub_str_)) &&
+                    (str_ptr != str_end);
+                    ++trstr_ptr, ++str_ptr) {
+                    if (*trstr_ptr != *str_ptr) {
+                        break;
+                    }
+                }
+                if (trstr_ptr == data(tr.sub_str_) + size(tr.sub_str_)) {
+                    rp.node_ = tr.dest_.get();
+                }
+                exhausted = (str_ptr == str_end);
+            } else {
+                break;
+            }
         }
         rp.start_ = sview_type(str_ptr, str_end - str_ptr);
     }
@@ -118,13 +135,13 @@ private:
         }
     }
 
-    std::pair<bool, node_type*> test_and_split(node_type *n, char_type const& t, sview_type const& str) { 
+    std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t) { 
         using std::data;
         using std::size;
         if (!size(str)) {
             return std::make_pair(n->find_transition(t).is_valid(), n);
         } else {
-            auto& tr = n->find_transition(t);
+            auto& tr = n->find_transition(str[0]);
             if (tr.sub_str_[size(str)+1] == t) {
                 return { true, n };
             } else {
@@ -155,12 +172,66 @@ private:
         }
     }
 
+    reference_point update(node_type *n, sview_type const& substr, sview_type const& whole_str) {
+        using std::size;
+        using std::data;
+        // substr is never empty here
+        auto trunc_substr = sview_type(data(substr), size(substr) - 1);
+        auto oldr = root_.get();
+        auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back());
+        while (!is_endpoint) {
+            using memory::make_unique;
+            // Add a leaf to the suffix tree
+            r->tr_.emplace(
+                substr.back(),
+                transition(
+                    make_unique<node_type, node_allocator>(),
+                    sview_type(
+                        &substr.back(),
+                        size(whole_str) - size(substr)
+                    )
+                )
+            );
+            if (oldr != root_.get()) {
+                oldr->link_ = r;
+            }
+            auto link = n->link_;
+            if (nullptr == link) {
+                // n is the root...
+                link = n;
+                if (size(trunc_substr)) {
+                    trunc_substr = sview_type(data(trunc_substr) + 1, size(trunc_substr) - 1);
+                }
+            }
+            std::tie(n, trunc_substr) = canonize(link, trunc_substr);
+            std::tie(is_endpoint, r) = test_and_split(n, trunc_substr, substr.back());
+        }
+        if (oldr != root_.get()) {
+            oldr->link_ = r;
+        }
+        return { n, trunc_substr };
+    }
+
 
     void deploy_suffixes(string_type const& whole_str) {
         using std::size;
         using std::data;
         reference_point rp { root_.get(), sview_type(data(whole_str), size(whole_str)) };
         get_starting_node(rp);
+        auto str_ptr = data(rp.start_);
+        auto str_size = size(rp.start_);
+        // We have the starting point, we must perform the remaining extensions
+        for (decltype(str_size) i = 1u; i < str_size; ++i) {
+            rp = update(
+                rp.node_,
+                sview_type(
+                    data(rp.start_),
+                    i - (data(rp.start_) - str_ptr)
+                ),
+                sview_type(data(whole_str), size(whole_str))
+            );
+            rp = canonize(rp.node_, rp.start_);
+        }
     }
 
     // Data members

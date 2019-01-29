@@ -63,7 +63,7 @@ public:
 
 private:
     static transition_type& empty_transition() {
-        static transition_type empty_tr(std::unique_ptr<self_type>(nullptr), sview_type(nullptr, 0));
+        static transition_type empty_tr(typename transition_type::node_ptr(nullptr), sview_type(nullptr, 0));
         return empty_tr;
     }
 
