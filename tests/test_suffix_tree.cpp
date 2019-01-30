@@ -13,4 +13,6 @@ TEST_F(SuffixTreeTest, CreateSTree) {
     ASSERT_TRUE(cao_substr);
     ASSERT_FALSE(kao_substr);
     ASSERT_TRUE(stree.is_substring("cac"));
+    stree.emplace("mississipi$");
+    ASSERT_TRUE(stree.is_substring("sipi$"));
 }

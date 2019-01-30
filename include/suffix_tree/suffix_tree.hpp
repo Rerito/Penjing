@@ -130,6 +130,9 @@ private:
                 if (remainder) {
                     n = tr_rw.get().dest_.get();
                     tr_rw = n->find_transition(*substr_ptr);
+                    if (!tr_rw.get().is_valid()) {
+                        break;
+                    }
                 }
             }
             return {n, sview_type(substr_ptr, remainder)};
@@ -185,6 +188,8 @@ private:
     reference_point update(node_type *n, sview_type const& substr, sview_type const& whole_str) {
         using std::size;
         using std::data;
+        auto end_wstr = data(whole_str) + size(whole_str);
+        auto b_substr = data(substr);
         // substr is never empty here
         std::cout << "update(" << n << ", "
                   << "(size: " << size(substr) << ", value: " << substr << "))\n";
@@ -200,7 +205,7 @@ private:
                     make_unique<node_type, node_allocator>(),
                     sview_type(
                         &substr.back(),
-                        size(whole_str) - size(substr) + 1
+                        end_wstr - &substr.back()
                     )
                 )
             );
