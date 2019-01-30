@@ -6,7 +6,6 @@
 #include <vector>
 #include <unordered_set>
 #include <functional>
-#include <iostream>
 
 #include "datastruct/cache.hpp"
 #include "utils/container_cleaner.hpp"
@@ -120,7 +119,6 @@ private:
         using std::data;
         using std::size;
         reference_point rp {n, substr};
-        std::cout << "canonize(" << n << ", (size: " << size(substr) << ", value: " << substr << "))\n";
         if (!size(substr)) {
         } else {
             auto total = size(substr);
@@ -146,21 +144,16 @@ private:
             rp = { n, sview_type(substr_ptr, &substr.back() - substr_ptr + 1) };
         }
 return_label:
-        std::cout << "<--- canonize: " << rp.node_ << ", (size: " << size(rp.start_) << ", value: " << rp.start_ << ")\n";
         return rp;
     }
 
     std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t) { 
         using std::data;
         using std::size;
-        std::cout << "test_and_split(" << n << ", "
-                  << "(size: " << size(str) << ", value: " << str << "), "
-                  << t << ")\n";
         if (!size(str)) {
             return std::make_pair(n->find_transition(t).is_valid(), n);
         } else {
             auto& tr = n->find_transition(str[0]);
-            std::cout << "Looking at transition: " << to_string(tr) << "\n";
             if (tr.sub_str_[size(str)] == t) {
                 return { true, n };
             } else {
@@ -170,8 +163,6 @@ return_label:
                 // And link it to existing state transition(n, a.x.b).dest_ with transition
                 // labeled x.b
                 using memory::make_unique;
-                std::cout << "(new branching state): Replacing transition\n"
-                          << to_string(tr)  << "\n";
                 auto r = make_unique<node_type, node_allocator>();
                 r->parent_ = n;
                 // Let's define the label for the transition from r to tr dest_
@@ -188,9 +179,6 @@ return_label:
                 // with the proper label.
                 tr.sub_str_ = sview_type(data(tr.sub_str_), size(str));
                 tr.dest_ = std::move(r);
-                std::cout << "With transitions:\n"
-                          << to_string(tr) << "\n"
-                          << to_string(new_tr_it->second) << "\n";
                 return { false, tr.dest_.get() };
             }
         }
@@ -202,8 +190,6 @@ return_label:
         auto end_wstr = data(whole_str) + size(whole_str);
         auto b_substr = data(substr);
         // substr is never empty here
-        std::cout << "update(" << n << ", "
-                  << "(size: " << size(substr) << ", value: " << substr << "))\n";
         auto trunc_substr = sview_type(data(substr), size(substr) - 1);
         auto oldr = root_.get();
         auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back());
@@ -220,7 +206,6 @@ return_label:
                     )
                 )
             );
-            std::cout << "added leaf with transition " << to_string(leaf_tr_it->second) << "\n";
             if (oldr != root_.get()) {
                 oldr->link_ = r;
             }
