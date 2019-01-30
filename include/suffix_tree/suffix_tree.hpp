@@ -206,6 +206,7 @@ return_label:
                     )
                 )
             );
+            leaf_tr_it->second.dest_->parent_ = r;
             if (oldr != root_.get()) {
                 oldr->link_ = r;
             }
