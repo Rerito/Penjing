@@ -12,4 +12,5 @@ TEST_F(SuffixTreeTest, CreateSTree) {
     auto kao_substr = stree.is_substring("kao$");  
     ASSERT_TRUE(cao_substr);
     ASSERT_FALSE(kao_substr);
+    ASSERT_TRUE(stree.is_substring("cac"));
 }

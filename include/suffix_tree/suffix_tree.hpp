@@ -211,9 +211,15 @@ private:
             auto link = n->link_;
             if (nullptr == link) {
                 // n is the root...
+                // We need to unroll the behavior of the special state
+                // defined in Ukkonen's paper
                 link = n;
                 if (size(trunc_substr)) {
                     trunc_substr = sview_type(data(trunc_substr) + 1, size(trunc_substr) - 1);
+                } else {
+                    trunc_substr = sview_type(data(trunc_substr) + 1, 0u);
+                    is_endpoint = true;
+                    break;
                 }
             }
             std::tie(n, trunc_substr) = canonize(link, trunc_substr);
