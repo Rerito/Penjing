@@ -102,6 +102,8 @@ private:
                 }
                 if (trstr_ptr == data(tr.sub_str_) + size(tr.sub_str_)) {
                     rp.node_ = tr.dest_.get();
+                } else {
+                    break;
                 }
                 exhausted = (str_ptr == str_end);
             } else {
@@ -117,26 +119,35 @@ private:
         // transition substring...
         using std::data;
         using std::size;
+        reference_point rp {n, substr};
+        std::cout << "canonize(" << n << ", (size: " << size(substr) << ", value: " << substr << "))\n";
         if (!size(substr)) {
-            return {n, substr};
         } else {
-            auto remainder = size(substr);
+            auto total = size(substr);
+            decltype(total) current = 0u; 
             auto substr_ptr = data(substr);
             auto tr_rw = std::ref(n->find_transition(substr[0]));
+            if (!tr_rw.get().is_valid()) {
+                goto return_label;
+            }
             auto delta = size(tr_rw.get().sub_str_);
-            while (delta <= remainder) {
+            while (delta + current <= total) {
                 substr_ptr += delta + 1;
-                remainder -= delta + 1;
-                if (remainder) {
+                current += delta + 1;
+                if (current < total) {
                     n = tr_rw.get().dest_.get();
                     tr_rw = n->find_transition(*substr_ptr);
                     if (!tr_rw.get().is_valid()) {
                         break;
                     }
+                    delta = size(tr_rw.get().sub_str_);
                 }
             }
-            return {n, sview_type(substr_ptr, remainder)};
+            rp = { n, sview_type(substr_ptr, &substr.back() - substr_ptr + 1) };
         }
+return_label:
+        std::cout << "<--- canonize: " << rp.node_ << ", (size: " << size(rp.start_) << ", value: " << rp.start_ << ")\n";
+        return rp;
     }
 
     std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t) { 
