@@ -3,6 +3,8 @@
 
 
 #include <unordered_map>
+#include <string>
+#include <sstream>
 #include <memory>
 #include "utils/memory.hpp"
 
@@ -19,6 +21,8 @@ struct transition {
     using node_type = Node;
     using sview_type = typename Node::sview_type;
     using node_ptr = memory::custom_alloc_unique_ptr<node_type, typename node_type::allocator>;
+    template <typename T>
+    friend std::string to_string(transition<T> const&);
     node_ptr dest_;
     sview_type sub_str_;
 
@@ -27,6 +31,16 @@ struct transition {
         return !!dest_;
     }
 };
+
+template <typename T>
+std::string to_string(transition<T> const& t) {
+    using std::to_string;
+    using std::data;
+    using std::size;
+    std::stringstream sstr;
+    sstr << "(size: " << size(t.sub_str_) << ", value: " << t.sub_str_ << ") -> " << (t.dest_.get());
+    return sstr.str();
+}
 
 template <typename String, typename SView>
 class suffix_tree_node {

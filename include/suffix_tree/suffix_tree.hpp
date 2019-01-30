@@ -6,6 +6,7 @@
 #include <vector>
 #include <unordered_set>
 #include <functional>
+#include <iostream>
 
 #include "datastruct/cache.hpp"
 #include "utils/container_cleaner.hpp"
@@ -59,7 +60,7 @@ public:
         using std::size;
         reference_point rp { root_.get(), sview_type(data(str), size(str)) };
         get_starting_node(rp);
-        return !!size(rp.start_);
+        return !size(rp.start_);
     }
 
 private:
@@ -138,11 +139,15 @@ private:
     std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t) { 
         using std::data;
         using std::size;
+        std::cout << "test_and_split(" << n << ", "
+                  << "(size: " << size(str) << ", value: " << str << "), "
+                  << t << ")\n";
         if (!size(str)) {
             return std::make_pair(n->find_transition(t).is_valid(), n);
         } else {
             auto& tr = n->find_transition(str[0]);
-            if (tr.sub_str_[size(str)+1] == t) {
+            std::cout << "Looking at transition: " << to_string(tr) << "\n";
+            if (tr.sub_str_[size(str)] == t) {
                 return { true, n };
             } else {
                 // Let a.x.b be the transition substring where a and b are
@@ -151,15 +156,17 @@ private:
                 // And link it to existing state transition(n, a.x.b).dest_ with transition
                 // labeled x.b
                 using memory::make_unique;
+                std::cout << "(new branching state): Replacing transition\n"
+                          << to_string(tr)  << "\n";
                 auto r = make_unique<node_type, node_allocator>();
                 r->parent_ = n;
                 // Let's define the label for the transition from r to tr dest_
                 auto t_end = sview_type(
-                    data(tr.sub_str_) + size(str) + 1, // starts at x
-                    size(tr.sub_str_) - size(str) - 1
+                    data(tr.sub_str_) + size(str), // starts at x
+                    size(tr.sub_str_) - size(str)
                 );
                 // Link the new state to the end of the transition
-                r->tr_.emplace(
+                auto [new_tr_it, did_emplace] = r->tr_.emplace(
                     t_end[0],
                     transition(std::move(tr.dest_), t_end)
                 );
@@ -167,6 +174,9 @@ private:
                 // with the proper label.
                 tr.sub_str_ = sview_type(data(tr.sub_str_), size(str));
                 tr.dest_ = std::move(r);
+                std::cout << "With transitions:\n"
+                          << to_string(tr) << "\n"
+                          << to_string(new_tr_it->second) << "\n";
                 return { false, tr.dest_.get() };
             }
         }
@@ -176,22 +186,25 @@ private:
         using std::size;
         using std::data;
         // substr is never empty here
+        std::cout << "update(" << n << ", "
+                  << "(size: " << size(substr) << ", value: " << substr << "))\n";
         auto trunc_substr = sview_type(data(substr), size(substr) - 1);
         auto oldr = root_.get();
         auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back());
         while (!is_endpoint) {
             using memory::make_unique;
             // Add a leaf to the suffix tree
-            r->tr_.emplace(
+            auto [leaf_tr_it, did_emplace] = r->tr_.emplace(
                 substr.back(),
                 transition(
                     make_unique<node_type, node_allocator>(),
                     sview_type(
                         &substr.back(),
-                        size(whole_str) - size(substr)
+                        size(whole_str) - size(substr) + 1
                     )
                 )
             );
+            std::cout << "added leaf with transition " << to_string(leaf_tr_it->second) << "\n";
             if (oldr != root_.get()) {
                 oldr->link_ = r;
             }
