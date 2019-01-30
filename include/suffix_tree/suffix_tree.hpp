@@ -12,6 +12,8 @@
 #include "detail/suffix_tree_node.hpp"
 #include "detail/payload.hpp"
 
+namespace st {
+
 namespace detail {
 
 } // namespace detail
@@ -29,6 +31,8 @@ public:
     using char_type = typename String::value_type;
     using sview_type  = SView;
     using node_type   = suffix_tree_node<String, SView>;
+    using node_allocator = typename node_type::allocator;
+    using node_ptr = memory::custom_alloc_unique_ptr<node_type, node_allocator>;
     using transition_type = typename node_type::transition_type;
     using hasher_type = StrHash;
     using string_cache_type = cache<size_t, string_type>;
@@ -37,7 +41,7 @@ public:
         end_token_(end_token),
         str_cache_(),
         leaves_(),
-        root_(std::make_unique<node_type>()) {}
+        root_(memory::make_unique<node_type, node_allocator>()) {}
 
     template <typename... Args>
     void emplace(string_type str_in, Args&&... args) {
@@ -50,172 +54,211 @@ public:
         deploy_suffixes(str);
     }
 
+    bool is_substring(string_type const& str) {
+        using std::data;
+        using std::size;
+        reference_point rp { root_.get(), sview_type(data(str), size(str)) };
+        get_starting_node(rp);
+        return !size(rp.start_);
     }
 
 private:
-
+    
     struct reference_point {
         node_type *node_;
         sview_type start_;
+
+        template <typename T, typename U>
+        operator std::tuple<T&, U&> () {
+            return std::forward_as_tuple(node_, start_);
+        }
     };
 
-    std::pair<bool, node_type*> test_and_split(node_type *n, sview_type sv, char_type t) {
-        using std::size;
+    size_t get_index(string_type const& str) {
+        return hasher_type()(str);
+    }
+
+
+    void get_starting_node(reference_point& rp) {
         using std::data;
-        if (!size(sv)) {
+        using std::size;
+        auto str_ptr = data(rp.start_);
+        auto str_size = size(rp.start_);
+        auto str_end = str_ptr + str_size;
+        bool exhausted = !str_size;
+        while (!exhausted) {
+            auto& tr = rp.node_->find_transition(*str_ptr);
+            if (tr.is_valid()) {
+                auto trstr_ptr = data(tr.sub_str_) + 1;
+                ++str_ptr;
+                for (;
+                    (trstr_ptr != data(tr.sub_str_) + size(tr.sub_str_)) &&
+                    (str_ptr != str_end);
+                    ++trstr_ptr, ++str_ptr) {
+                    if (*trstr_ptr != *str_ptr) {
+                        break;
+                    }
+                }
+                if (trstr_ptr == data(tr.sub_str_) + size(tr.sub_str_)) {
+                    rp.node_ = tr.dest_.get();
+                } else {
+                    break;
+                }
+                exhausted = (str_ptr == str_end);
+            } else {
+                break;
+            }
+        }
+        rp.start_ = sview_type(str_ptr, str_end - str_ptr);
+    }
+
+
+    reference_point canonize(node_type* n, sview_type const& substr) {
+        // Use the skip/count trick to avoid checking every character on the
+        // transition substring...
+        using std::data;
+        using std::size;
+        reference_point rp {n, substr};
+        if (!size(substr)) {
+        } else {
+            auto total = size(substr);
+            decltype(total) current = 0u; 
+            auto substr_ptr = data(substr);
+            auto tr_rw = std::ref(n->find_transition(substr[0]));
+            if (!tr_rw.get().is_valid()) {
+                goto return_label;
+            }
+            auto delta = size(tr_rw.get().sub_str_);
+            while (delta + current <= total) {
+                substr_ptr += delta + 1;
+                current += delta + 1;
+                if (current < total) {
+                    n = tr_rw.get().dest_.get();
+                    tr_rw = n->find_transition(*substr_ptr);
+                    if (!tr_rw.get().is_valid()) {
+                        break;
+                    }
+                    delta = size(tr_rw.get().sub_str_);
+                }
+            }
+            rp = { n, sview_type(substr_ptr, &substr.back() - substr_ptr + 1) };
+        }
+return_label:
+        return rp;
+    }
+
+    std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t) { 
+        using std::data;
+        using std::size;
+        if (!size(str)) {
             return std::make_pair(n->find_transition(t).is_valid(), n);
         } else {
-            auto& tr = n->find_transition(sv[0]);
-            auto i_t = size(sv) + 1;
-            // Test and split is always called with canonical pairs (n, sw),
-            // This means that by walking down from n with sw, we do not
-            // traverse any explicit state...
-            
-            if (tr.sub_str_[i_t] == t) {
-                return std::make_pair(true, n);
+            auto& tr = n->find_transition(str[0]);
+            if (tr.sub_str_[size(str)] == t) {
+                return { true, n };
             } else {
-                // The transition from n starting with sw do not match t at
-                // character size(sw)+1, thus we need to branch!
-                auto r = std::make_unique<node_type>();
-                auto r_raw = r.get();
+                // Let a.x.b be the transition substring where a and b are
+                // substring (b is possibly empty) and x a single character...
+                // We must create a new state from n with a transition labeled a
+                // And link it to existing state transition(n, a.x.b).dest_ with transition
+                // labeled x.b
+                using memory::make_unique;
+                auto r = make_unique<node_type, node_allocator>();
                 r->parent_ = n;
-                tr.dest_->parent_ = r_raw;
-                tr.sub_str_ = sview_type(data(tr.sub_str_), size(sv));
-                r->tr_.emplace(
-                    tr.sub_str_[size(sv)],
-                    typename node_type::transition_type(
-                        std::move(tr.dest_),
-                        sview_type(data(tr.sub_str_) + size(sv) + 1, size(tr.sub_str_) - size(sv) - 1)
-                    )
+                // Let's define the label for the transition from r to tr dest_
+                auto t_end = sview_type(
+                    data(tr.sub_str_) + size(str), // starts at x
+                    size(tr.sub_str_) - size(str)
                 );
+                // Link the new state to the end of the transition
+                auto [new_tr_it, did_emplace] = r->tr_.emplace(
+                    t_end[0],
+                    transition(std::move(tr.dest_), t_end)
+                );
+                // And now edit the former transition so that it points to r
+                // with the proper label.
+                tr.sub_str_ = sview_type(data(tr.sub_str_), size(str));
                 tr.dest_ = std::move(r);
-                return std::make_pair(false, r_raw);
+                return { false, tr.dest_.get() };
             }
         }
     }
 
     reference_point update(node_type *n, sview_type const& substr, sview_type const& whole_str) {
-        using std::data;
         using std::size;
-        // Update is never called with an empty substr string view
-        auto trunc_substr = sview_type(
-            data(substr),
-            size(substr) - 1
-        );
-        auto r_old = root_.get();
+        using std::data;
+        auto end_wstr = data(whole_str) + size(whole_str);
+        auto b_substr = data(substr);
+        // substr is never empty here
+        auto trunc_substr = sview_type(data(substr), size(substr) - 1);
+        auto oldr = root_.get();
         auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back());
         while (!is_endpoint) {
-            // We must create a new leaf from r...
-            // When we do so, substr is always a string view on the string we
-            // are currently inserting in the tree...
-            // Let's leverage on that to create the correct leaf transition
-            auto tr_sv_data = data(substr) + size(substr);
-            auto tr_sv_size = size(whole_str) + data(whole_str) - tr_sv_data;
-            r->tr_.emplace(
+            using memory::make_unique;
+            // Add a leaf to the suffix tree
+            auto [leaf_tr_it, did_emplace] = r->tr_.emplace(
                 substr.back(),
-                typename node_type::transition_type(
-                    std::make_unique<node_type>(),
-                    sview_type(tr_sv_data, tr_sv_size) // TODO keep track of actual string size...
+                transition(
+                    make_unique<node_type, node_allocator>(),
+                    sview_type(
+                        &substr.back(),
+                        end_wstr - &substr.back()
+                    )
                 )
             );
-            if (r_old != root_.get()) {
-                r_old->link_ = r;
+            if (oldr != root_.get()) {
+                oldr->link_ = r;
             }
-            r_old = r;
-            if (n->link_) {
-                auto rp = canonize(n->link_, trunc_substr);
-                auto ep_r = test_and_split(rp.node_, rp.start_, substr.back());
-                r = ep_r.second;
-                is_endpoint = ep_r.first;
-            } else {
-                is_endpoint = true;
-            }
-        }
-        return { n, substr };
-    }
-
-    reference_point canonize(node_type *node, sview_type const& substr) {
-        using std::data;
-        using std::size;
-        auto psstr = data(substr);
-        if (!size(substr)) {
-            return { node, sview_type(psstr, 0) };
-        }
-        std::reference_wrapper<transition_type> tr = node->find_transition(*psstr);
-        size_t remainder = size(substr), delta;
-        while((delta = size(tr.get().sub_str_)) < remainder) {
-            remainder -= 1 + delta;
-            psstr += 1 + delta;
-            node = tr.get().dest_.get();
-            if (!remainder) {
-                break;
-            }
-            tr = node->find_transition(*psstr);
-        }
-        return { node, sview_type(psstr, remainder) };
-    }
-
-    void get_starting_node(reference_point& active_point) const {
-        // Walk down the tree using `str`..., starting from `active_point.node`
-        // This function is always called with active_point.start_ being a
-        // string_view of str...
-        using std::data;
-        using std::size;
-        auto s_len = size(active_point.start_);
-        auto end_str = data(active_point.start_) + s_len;
-        bool s_ranout = false;
-        while (!s_ranout) {
-            auto start_ = data(active_point.start_);
-            if (start_ >= end_str) {
-                break;
-            }
-            auto& tr = active_point.node_->find_transition(*start_);
-            if (!(tr.is_valid())) {
-                return;
-            }
-            auto tr_view_ptr = data(tr.sub_str_);
-            auto end_view_ptr = tr_view_ptr + size(tr.sub_str_);
-            for (++start_, ++tr_view_ptr;
-                 start_ != end_str && tr_view_ptr != end_view_ptr;
-                 ++start_, ++tr_view_ptr) {
-                if (*(start_) != *(tr_view_ptr)) {
-                    active_point.start_ = sview_type(start_, size(active_point.start_) - (start_ - data(active_point.start_)));
-                    return;
+            auto link = n->link_;
+            if (nullptr == link) {
+                // n is the root...
+                // We need to unroll the behavior of the special state
+                // defined in Ukkonen's paper
+                link = n;
+                if (size(trunc_substr)) {
+                    trunc_substr = sview_type(data(trunc_substr) + 1, size(trunc_substr) - 1);
+                } else {
+                    trunc_substr = sview_type(data(trunc_substr) + 1, 0u);
+                    is_endpoint = true;
+                    break;
                 }
-                active_point.start_ = sview_type(start_, size(active_point.start_) - (start_ - data(active_point.start_)));
             }
-            if (tr_view_ptr == end_view_ptr) {
-                active_point.node_ = tr.dest_.get();
-            }
+            std::tie(n, trunc_substr) = canonize(link, trunc_substr);
+            std::tie(is_endpoint, r) = test_and_split(n, trunc_substr, substr.back());
         }
-        throw std::runtime_error("");
+        if (oldr != root_.get()) {
+            oldr->link_ = r;
+        }
+        return { n, trunc_substr };
     }
 
-    void deploy_suffixes(string_type const& str) {
-        using std::data;
+
+    void deploy_suffixes(string_type const& whole_str) {
         using std::size;
-        auto whole_str = sview_type(data(str), size(str));
-        reference_point active_point { root_.get(), whole_str };
-        get_starting_node(active_point);
-        for (auto p = data(active_point.start_); p != data(str) + size(str) + 1; ++p) {
-            active_point = update(
-                active_point.node_,
+        using std::data;
+        reference_point rp { root_.get(), sview_type(data(whole_str), size(whole_str)) };
+        get_starting_node(rp);
+        auto str_ptr = data(rp.start_);
+        auto str_size = size(rp.start_);
+        // We have the starting point, we must perform the remaining extensions
+        for (decltype(str_size) i = 1u; i < str_size; ++i) {
+            rp = update(
+                rp.node_,
                 sview_type(
-                  data(active_point.start_),
-                  p - data(active_point.start_) + 1
+                    data(rp.start_),
+                    i - (data(rp.start_) - str_ptr)
                 ),
-                whole_str
-            ); 
-            active_point = canonize(active_point.node_, active_point.start_);
+                sview_type(data(whole_str), size(whole_str))
+            );
+            rp = canonize(rp.node_, rp.start_);
         }
     }
 
-    size_t get_index(string_type const& str) {
-        return hasher_type()(str);
-    }
+    // Data members
     char_type end_token_;
     string_cache_type str_cache_;
     std::vector<node_type*> leaves_;
-    std::unique_ptr<node_type> root_;
+    node_ptr root_;
 };
 
+} // namespace st

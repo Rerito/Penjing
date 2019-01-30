@@ -27,11 +27,15 @@ struct custom_alloc_deleter : DestroyPolicy {
     }
 };
 
+template <typename T, typename Alloc>
+using custom_alloc_unique_ptr = std::unique_ptr<T, custom_alloc_deleter<Alloc, with_destruction> >;
+
 template <typename T, typename Alloc, typename... Args>
 auto make_unique(Args&&... args) {
     auto ptrStorage = std::unique_ptr<T, custom_alloc_deleter<Alloc, no_destruction> > (Alloc{}.allocate(1));
     new (ptrStorage.get()) T(CPPDWD(args)...);
     return std::unique_ptr<T, custom_alloc_deleter<Alloc, with_destruction> >(ptrStorage.release());
 }
+
 
 } // namespace memory

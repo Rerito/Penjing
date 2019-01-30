@@ -33,10 +33,16 @@ struct models_single<
 template <typename... Concepts>
 struct models : all_of_t<detail::models_single<Concepts>::value...> {};
 
+namespace detail {
 
+template <typename Concept>
+struct models_base_single {
+    static_assert(models_single<Concept>::value, "The given concept is not enforced");
+};
+
+} // namespace detail
 
 template <typename... Concepts>
-struct models_base {
-    static_assert(models<Concepts...>::value, "One of the given concepts is not enforced");
-};
+struct models_base : detail::models_base_single<Concepts>... {};
+
 } // namespace meta
