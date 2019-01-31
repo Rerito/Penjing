@@ -62,6 +62,26 @@ public:
     suffix_tree_node(suffix_tree_node&&) = default;
     suffix_tree_node& operator=(suffix_tree_node&&) = default;
 
+    bool operator==(suffix_tree_node const& other) const {
+        bool value = (size(tr_) == size(other.tr_));
+        if (value) {
+            for (auto const& t : tr_) {
+                auto const& t_other = other.find_transition(t.first);
+                if (!t_other.is_valid() || t_other.sub_str_ != t.second.sub_str_) {
+                    return false;
+                } else {
+                    value = value && (*t.second.dest_ == *t_other.dest_);
+                }
+            }
+        }
+        return value;
+    }
+
+    bool operator!=(suffix_tree_node const& other) const {
+        return !(*this == other);
+    }
+
+
     transition_type const& find_transition(char_type c) const {
         auto it = tr_.find(c);
         if (end(tr_) == it) {

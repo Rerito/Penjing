@@ -34,6 +34,24 @@ private:
 public:
     using PruningPolicy::PruningPolicy;
 
+    bool operator==(basic_cache const& other) const {
+        if (size(map_to_els_) != size(other.map_to_els_)) {
+            return false;
+        }
+        for (auto const& m : map_to_els_) {
+            auto m_other_it = other.map_to_els_.find(m.first);
+            if (end(other.map_to_els_) == m_other_it ||
+                !(m_other_it->second->second == m.second->second)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(basic_cache const& other) const {
+        return !(*this == other);
+    }
+
     template <typename... Args>
     auto& emplace(Key const& k, Args&&... args) {
         auto& it = map_to_els_[k];
