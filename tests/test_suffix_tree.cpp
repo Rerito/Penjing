@@ -33,4 +33,6 @@ TEST_F(SuffixTreeTest, Equality) {
     ASSERT_NE(t1,t2);
     t2.emplace("chocolate$");
     ASSERT_EQ(t1,t2);
+    t2.emplace("late$");
+    ASSERT_TRUE(t1.structurally_equal_to(t2));
 }
