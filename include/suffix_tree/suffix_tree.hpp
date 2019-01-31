@@ -11,6 +11,7 @@
 #include "utils/container_cleaner.hpp"
 #include "detail/suffix_tree_node.hpp"
 #include "detail/payload.hpp"
+#include "detail/insertion_context.hpp"
 
 namespace st {
 
@@ -73,7 +74,7 @@ public:
     }
 
 private:
-    
+    using insertion_context_type = insertion_context<node_type>;
     struct reference_point {
         node_type *node_;
         sview_type start_;
@@ -157,7 +158,7 @@ return_label:
         return rp;
     }
 
-    std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t) { 
+    std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t, insertion_context_type& ctx) {
         using std::data;
         using std::size;
         if (!size(str)) {
@@ -189,12 +190,13 @@ return_label:
                 // with the proper label.
                 tr.sub_str_ = sview_type(data(tr.sub_str_), size(str));
                 tr.dest_ = std::move(r);
+                ctx.add_branch_op(n, tr.sub_str_[0], t_end[0]);
                 return { false, tr.dest_.get() };
             }
         }
     }
 
-    reference_point update(node_type *n, sview_type const& substr, sview_type const& whole_str) {
+    reference_point update(node_type *n, sview_type const& substr, sview_type const& whole_str, insertion_context_type& ctx) {
         using std::size;
         using std::data;
         auto end_wstr = data(whole_str) + size(whole_str);
@@ -202,7 +204,7 @@ return_label:
         // substr is never empty here
         auto trunc_substr = sview_type(data(substr), size(substr) - 1);
         auto oldr = root_.get();
-        auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back());
+        auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back(), ctx);
         while (!is_endpoint) {
             using memory::make_unique;
             // Add a leaf to the suffix tree
@@ -217,6 +219,7 @@ return_label:
                 )
             );
             leaf_tr_it->second.dest_->parent_ = r;
+            ctx.add_leaf_op(r, substr.back());
             if (oldr != root_.get()) {
                 oldr->link_ = r;
             }
@@ -235,7 +238,7 @@ return_label:
                 }
             }
             std::tie(n, trunc_substr) = canonize(link, trunc_substr);
-            std::tie(is_endpoint, r) = test_and_split(n, trunc_substr, substr.back());
+            std::tie(is_endpoint, r) = test_and_split(n, trunc_substr, substr.back(), ctx);
         }
         if (oldr != root_.get()) {
             oldr->link_ = r;
@@ -247,6 +250,7 @@ return_label:
     void deploy_suffixes(string_type const& whole_str) {
         using std::size;
         using std::data;
+        insertion_context_type ctx;
         reference_point rp { root_.get(), sview_type(data(whole_str), size(whole_str)) };
         get_starting_node(rp);
         auto str_ptr = data(rp.start_);
@@ -259,10 +263,13 @@ return_label:
                     data(rp.start_),
                     i - (data(rp.start_) - str_ptr)
                 ),
-                sview_type(data(whole_str), size(whole_str))
+                sview_type(data(whole_str), size(whole_str)),
+                ctx
             );
             rp = canonize(rp.node_, rp.start_);
         }
+        // Everything went well, let's disable the RAII undo tree
+        ctx.cancel();
     }
 
     // Data members
