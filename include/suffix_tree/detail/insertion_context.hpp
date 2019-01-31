@@ -33,6 +33,10 @@ private:
         char_type c_;
         bool do_delete_;
     public:
+        add_leaf(add_leaf&& o) noexcept : parent_(o.parent_), c_(o.c_), do_delete_(o.do_delete_) {
+            o.do_delete_ = false;
+        };
+
         add_leaf(Node *p, char_type const& c) : parent_(p), c_(c), do_delete_(true) {}
         ~add_leaf() {
             if (do_delete_) {
@@ -51,6 +55,9 @@ private:
         bool do_delete_;
     public:
         new_branch(Node* orig, char_type const& j1, char_type const& j2) : orig_(orig), jmp1_(j1), jmp2_(j2), do_delete_(true) {}
+        new_branch(new_branch&& o) noexcept : orig_(o.orig_), jmp1_(o.jmp1_), jmp2_(o.jmp2_), do_delete_(o.do_delete_) {
+            o.do_delete_ = false;
+        }
         ~new_branch() {
             using std::size;
             using std::data;
@@ -68,11 +75,11 @@ private:
 public:
 
     void add_leaf_op(node_type *leaf_parent, char_type t_head) {
-        ops_.emplace(add_leaf { leaf_parent, t_head });
+        ops_.emplace(std::in_place_type<add_leaf>,  leaf_parent, t_head);
     }
 
     void add_branch_op(node_type *orig, char_type const& j1, char_type const& j2) {
-        ops_.emplace(new_branch { orig, j1, j2 });
+        ops_.emplace(std::in_place_type<new_branch>, orig, j1, j2);
     }
 
     ~insertion_context() {
@@ -83,7 +90,7 @@ public:
 
     void cancel() {
         while(!ops_.empty()) {
-            std::visit([](auto& el) { el.cancel(); }, ops_.top());
+            std::visit([](auto& el) noexcept { el.cancel(); }, ops_.top());
             ops_.pop(); 
         }
     }
