@@ -44,6 +44,10 @@ public:
         leaves_(),
         root_(memory::make_unique<node_type, node_allocator>()) {}
 
+    bool structurally_equal_to(suffix_tree const& other) const {
+        return *root_ == *other.root_;
+    }
+
     bool operator==(suffix_tree const& other) const {
         // We should first compare the caches to see the registered strings
         // Then we should also compare the actual suffix trees.
