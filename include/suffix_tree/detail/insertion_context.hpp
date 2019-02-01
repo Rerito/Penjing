@@ -31,20 +31,11 @@ private:
     class add_leaf {
         Node *parent_;
         char_type c_;
-        bool do_delete_;
     public:
-        add_leaf(add_leaf&& o) noexcept : parent_(o.parent_), c_(o.c_), do_delete_(o.do_delete_) {
-            o.do_delete_ = false;
-        };
 
-        add_leaf(Node *p, char_type const& c) : parent_(p), c_(c), do_delete_(true) {}
-        ~add_leaf() {
-            if (do_delete_) {
-                node_access::remove_transition(*parent_, c_);
-            }
-        }
-        void cancel() noexcept {
-            do_delete_ = false;
+        add_leaf(Node *p, char_type const& c) : parent_(p), c_(c) {}
+        void undo() {
+            node_access::remove_transition(*parent_, c_);
         }
     };
 
@@ -52,23 +43,16 @@ private:
         Node *orig_;
         char_type jmp1_;
         char_type jmp2_;
-        bool do_delete_;
     public:
-        new_branch(Node* orig, char_type const& j1, char_type const& j2) : orig_(orig), jmp1_(j1), jmp2_(j2), do_delete_(true) {}
-        new_branch(new_branch&& o) noexcept : orig_(o.orig_), jmp1_(o.jmp1_), jmp2_(o.jmp2_), do_delete_(o.do_delete_) {
-            o.do_delete_ = false;
-        }
-        ~new_branch() {
+        new_branch(Node* orig, char_type const& j1, char_type const& j2) : orig_(orig), jmp1_(j1), jmp2_(j2) {}
+        void undo() {
             using std::size;
             using std::data;
-            if (do_delete_) {
-                auto& tr = orig_->find_transition(jmp1_);
-                auto& tr2 = tr.dest_->find_transition(jmp2_);
-                tr.dest_ = std::move(tr2.dest_);
-                tr.sub_str_ = sview_type(data(tr.sub_str_), size(tr.sub_str_) + size(tr2.sub_str_));
-            }
+            auto& tr = orig_->find_transition(jmp1_);
+            auto& tr2 = tr.dest_->find_transition(jmp2_);
+            tr.dest_ = std::move(tr2.dest_);
+            tr.sub_str_ = sview_type(data(tr.sub_str_), size(tr.sub_str_) + size(tr2.sub_str_));
         }
-        void cancel() noexcept { do_delete_ = false; }
     };
 
     using op_variant = std::variant<add_leaf, new_branch>;
@@ -84,15 +68,13 @@ public:
 
     ~insertion_context() {
         while(!ops_.empty()) {
+            std::visit([](auto& op) { op.undo(); }, ops_.top());
             ops_.pop();
         }
     }
 
     void cancel() {
-        while(!ops_.empty()) {
-            std::visit([](auto& el) noexcept { el.cancel(); }, ops_.top());
-            ops_.pop(); 
-        }
+        ops_ = {};
     }
 private:
     std::stack<op_variant, std::vector<op_variant> > ops_;
