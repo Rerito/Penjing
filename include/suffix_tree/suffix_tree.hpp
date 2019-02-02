@@ -11,6 +11,7 @@
 #include "utils/container_cleaner.hpp"
 #include "detail/suffix_tree_node.hpp"
 #include "detail/payload.hpp"
+#include "detail/insertion_context.hpp"
 
 namespace st {
 
@@ -22,7 +23,8 @@ template <typename String=std::string,
           typename SView=std::basic_string_view<
               typename String::value_type,
               typename String::traits_type>,
-          typename StrHash = std::hash<String>
+          typename StrHash = std::hash<String>,
+          typename Allocator = std::allocator<String>
          >
 class suffix_tree {
 public:
@@ -30,18 +32,20 @@ public:
     using index_type = size_t; // TODO: Update this to match correct index type used here
     using char_type = typename String::value_type;
     using sview_type  = SView;
-    using node_type   = suffix_tree_node<String, SView>;
+    using alloc_traits = std::allocator_traits<Allocator>;
+    using node_type   = suffix_tree_node<String, SView, alloc_traits>;
     using node_allocator = typename node_type::allocator;
     using node_ptr = memory::custom_alloc_unique_ptr<node_type, node_allocator>;
     using transition_type = typename node_type::transition_type;
     using hasher_type = StrHash;
     using string_cache_type = cache<size_t, string_type>;
 
-    suffix_tree(char_type const& end_token) :
+    suffix_tree(char_type const& end_token, Allocator const& a = Allocator()) :
         end_token_(end_token),
         str_cache_(),
         leaves_(),
-        root_(memory::make_unique<node_type, node_allocator>()) {}
+        alloc_(a),
+        root_(memory::allocate_unique<node_type>(alloc_)) {}
 
     bool structurally_equal_to(suffix_tree const& other) const {
         return *root_ == *other.root_;
@@ -63,9 +67,12 @@ public:
         if (end_token_ != str_in[size(str_in)-1]) {
             throw std::invalid_argument("The given string doesn't end with the end token of this tree");
         }
+        container_cleaner<string_cache_type, size_t> clnr(str_cache_);
         size_t str_key = get_index(str_in);
         auto& str = str_cache_.emplace(str_key, std::move(str_in));
+        clnr.add_to_clean(str_key);
         deploy_suffixes(str);
+        clnr.clear();
     }
 
     bool is_substring(string_type const& str) {
@@ -77,7 +84,7 @@ public:
     }
 
 private:
-    
+    using insertion_context_type = insertion_context<node_type>;
     struct reference_point {
         node_type *node_;
         sview_type start_;
@@ -161,7 +168,7 @@ return_label:
         return rp;
     }
 
-    std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t) { 
+    std::pair<bool, node_type*> test_and_split(node_type *n, sview_type const& str, char_type const& t, insertion_context_type& ctx) {
         using std::data;
         using std::size;
         if (!size(str)) {
@@ -176,8 +183,8 @@ return_label:
                 // We must create a new state from n with a transition labeled a
                 // And link it to existing state transition(n, a.x.b).dest_ with transition
                 // labeled x.b
-                using memory::make_unique;
-                auto r = make_unique<node_type, node_allocator>();
+                using memory::allocate_unique;
+                auto r = allocate_unique<node_type>(alloc_);
                 r->parent_ = n;
                 // Let's define the label for the transition from r to tr dest_
                 auto t_end = sview_type(
@@ -193,12 +200,13 @@ return_label:
                 // with the proper label.
                 tr.sub_str_ = sview_type(data(tr.sub_str_), size(str));
                 tr.dest_ = std::move(r);
+                ctx.add_branch_op(n, tr.sub_str_[0], t_end[0]);
                 return { false, tr.dest_.get() };
             }
         }
     }
 
-    reference_point update(node_type *n, sview_type const& substr, sview_type const& whole_str) {
+    reference_point update(node_type *n, sview_type const& substr, sview_type const& whole_str, insertion_context_type& ctx) {
         using std::size;
         using std::data;
         auto end_wstr = data(whole_str) + size(whole_str);
@@ -206,14 +214,14 @@ return_label:
         // substr is never empty here
         auto trunc_substr = sview_type(data(substr), size(substr) - 1);
         auto oldr = root_.get();
-        auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back());
+        auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back(), ctx);
         while (!is_endpoint) {
-            using memory::make_unique;
+            using memory::allocate_unique;
             // Add a leaf to the suffix tree
             auto [leaf_tr_it, did_emplace] = r->tr_.emplace(
                 substr.back(),
                 transition(
-                    make_unique<node_type, node_allocator>(),
+                    allocate_unique<node_type>(alloc_),
                     sview_type(
                         &substr.back(),
                         end_wstr - &substr.back()
@@ -221,6 +229,7 @@ return_label:
                 )
             );
             leaf_tr_it->second.dest_->parent_ = r;
+            ctx.add_leaf_op(r, substr.back());
             if (oldr != root_.get()) {
                 oldr->link_ = r;
             }
@@ -239,7 +248,7 @@ return_label:
                 }
             }
             std::tie(n, trunc_substr) = canonize(link, trunc_substr);
-            std::tie(is_endpoint, r) = test_and_split(n, trunc_substr, substr.back());
+            std::tie(is_endpoint, r) = test_and_split(n, trunc_substr, substr.back(), ctx);
         }
         if (oldr != root_.get()) {
             oldr->link_ = r;
@@ -251,6 +260,7 @@ return_label:
     void deploy_suffixes(string_type const& whole_str) {
         using std::size;
         using std::data;
+        insertion_context_type ctx;
         reference_point rp { root_.get(), sview_type(data(whole_str), size(whole_str)) };
         get_starting_node(rp);
         auto str_ptr = data(rp.start_);
@@ -263,16 +273,20 @@ return_label:
                     data(rp.start_),
                     i - (data(rp.start_) - str_ptr)
                 ),
-                sview_type(data(whole_str), size(whole_str))
+                sview_type(data(whole_str), size(whole_str)),
+                ctx
             );
             rp = canonize(rp.node_, rp.start_);
         }
+        // Everything went well, let's disable the RAII undo tree
+        ctx.cancel();
     }
 
     // Data members
     char_type end_token_;
     string_cache_type str_cache_;
     std::vector<node_type*> leaves_;
+    node_allocator alloc_;
     node_ptr root_;
 };
 

@@ -21,6 +21,7 @@ struct transition {
     using node_type = Node;
     using sview_type = typename Node::sview_type;
     using node_ptr = memory::custom_alloc_unique_ptr<node_type, typename node_type::allocator>;
+
     template <typename T>
     friend std::string to_string(transition<T> const&);
     node_ptr dest_;
@@ -42,16 +43,18 @@ std::string to_string(transition<T> const& t) {
     return sstr.str();
 }
 
-template <typename String, typename SView>
+template <typename String, typename SView, typename AllocatorTraits>
 class suffix_tree_node {
-    template <typename, typename, typename>
+    template <typename, typename, typename, typename>
     friend class suffix_tree;
+
+    friend class node_access;
 public:
     using char_type = typename String::value_type;
     using string_type = String;
     using sview_type  = SView;
     using self_type = suffix_tree_node;
-    using allocator = std::allocator<self_type>;
+    using allocator = typename AllocatorTraits::template rebind_alloc<self_type>;
     using transition_type = transition<self_type>;
 
     // Disable the copy for now...

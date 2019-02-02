@@ -41,9 +41,10 @@ struct MemoryTest : testing::Test {
 };
 
 TEST_F(MemoryTest, TestMakeUnique) {
-    using memory::make_unique;
+    test_allocator<life_tracker> a{};
+    using memory::allocate_unique;
     {
-        auto ptr = make_unique<life_tracker, test_allocator<life_tracker> >();
+        auto ptr = allocate_unique<life_tracker>(a);
     }
     ASSERT_EQ(test_allocator<life_tracker>::nb_alloc, test_allocator<life_tracker>::nb_dealloc);
     ASSERT_EQ(test_allocator<life_tracker>::nb_alloc, 1u);
