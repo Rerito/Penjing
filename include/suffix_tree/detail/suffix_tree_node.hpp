@@ -54,7 +54,6 @@ public:
     using string_type = String;
     using sview_type  = SView;
     using self_type = suffix_tree_node;
-    using allocator_traits = typename AllocatorTraits::template rebind_traits<self_type>;
     using allocator = typename AllocatorTraits::template rebind_alloc<self_type>;
     using transition_type = transition<self_type>;
 

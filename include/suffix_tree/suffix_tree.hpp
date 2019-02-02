@@ -34,8 +34,7 @@ public:
     using sview_type  = SView;
     using alloc_traits = std::allocator_traits<Allocator>;
     using node_type   = suffix_tree_node<String, SView, alloc_traits>;
-    using node_allocator_traits = typename alloc_traits::template rebind_traits<node_type>;
-    using node_allocator = typename alloc_traits::template rebind_alloc<node_type>;
+    using node_allocator = typename node_type::allocator;
     using node_ptr = memory::custom_alloc_unique_ptr<node_type, node_allocator>;
     using transition_type = typename node_type::transition_type;
     using hasher_type = StrHash;
@@ -68,9 +67,12 @@ public:
         if (end_token_ != str_in[size(str_in)-1]) {
             throw std::invalid_argument("The given string doesn't end with the end token of this tree");
         }
+        container_cleaner<string_cache_type, size_t> clnr(str_cache_);
         size_t str_key = get_index(str_in);
         auto& str = str_cache_.emplace(str_key, std::move(str_in));
+        clnr.add_to_clean(str_key);
         deploy_suffixes(str);
+        clnr.clear();
     }
 
     bool is_substring(string_type const& str) {
