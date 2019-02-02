@@ -23,7 +23,8 @@ template <typename String=std::string,
           typename SView=std::basic_string_view<
               typename String::value_type,
               typename String::traits_type>,
-          typename StrHash = std::hash<String>
+          typename StrHash = std::hash<String>,
+          typename Allocator = std::allocator<String>
          >
 class suffix_tree {
 public:
@@ -31,18 +32,21 @@ public:
     using index_type = size_t; // TODO: Update this to match correct index type used here
     using char_type = typename String::value_type;
     using sview_type  = SView;
-    using node_type   = suffix_tree_node<String, SView>;
-    using node_allocator = typename node_type::allocator;
+    using alloc_traits = std::allocator_traits<Allocator>;
+    using node_type   = suffix_tree_node<String, SView, alloc_traits>;
+    using node_allocator_traits = typename alloc_traits::template rebind_traits<node_type>;
+    using node_allocator = typename alloc_traits::template rebind_alloc<node_type>;
     using node_ptr = memory::custom_alloc_unique_ptr<node_type, node_allocator>;
     using transition_type = typename node_type::transition_type;
     using hasher_type = StrHash;
     using string_cache_type = cache<size_t, string_type>;
 
-    suffix_tree(char_type const& end_token) :
+    suffix_tree(char_type const& end_token, Allocator const& a = Allocator()) :
         end_token_(end_token),
         str_cache_(),
         leaves_(),
-        root_(memory::make_unique<node_type, node_allocator>()) {}
+        alloc_(a),
+        root_(memory::allocate_unique<node_type>(alloc_)) {}
 
     bool structurally_equal_to(suffix_tree const& other) const {
         return *root_ == *other.root_;
@@ -177,8 +181,8 @@ return_label:
                 // We must create a new state from n with a transition labeled a
                 // And link it to existing state transition(n, a.x.b).dest_ with transition
                 // labeled x.b
-                using memory::make_unique;
-                auto r = make_unique<node_type, node_allocator>();
+                using memory::allocate_unique;
+                auto r = allocate_unique<node_type>(alloc_);
                 r->parent_ = n;
                 // Let's define the label for the transition from r to tr dest_
                 auto t_end = sview_type(
@@ -210,12 +214,12 @@ return_label:
         auto oldr = root_.get();
         auto [is_endpoint, r] = test_and_split(n, trunc_substr, substr.back(), ctx);
         while (!is_endpoint) {
-            using memory::make_unique;
+            using memory::allocate_unique;
             // Add a leaf to the suffix tree
             auto [leaf_tr_it, did_emplace] = r->tr_.emplace(
                 substr.back(),
                 transition(
-                    make_unique<node_type, node_allocator>(),
+                    allocate_unique<node_type>(alloc_),
                     sview_type(
                         &substr.back(),
                         end_wstr - &substr.back()
@@ -280,6 +284,7 @@ return_label:
     char_type end_token_;
     string_cache_type str_cache_;
     std::vector<node_type*> leaves_;
+    node_allocator alloc_;
     node_ptr root_;
 };
 
