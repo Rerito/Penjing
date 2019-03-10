@@ -50,6 +50,7 @@ private:
             using std::data;
             auto& tr = orig_->find_transition(jmp1_);
             auto& tr2 = tr.dest_->find_transition(jmp2_);
+            node_access::set_parent(*tr2.dest_, *tr.dest_);
             tr.dest_ = std::move(tr2.dest_);
             tr.sub_str_ = sview_type(data(tr.sub_str_), size(tr.sub_str_) + size(tr2.sub_str_));
         }

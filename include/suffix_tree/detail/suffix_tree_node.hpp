@@ -56,9 +56,10 @@ public:
     using self_type = suffix_tree_node;
     using allocator = typename AllocatorTraits::template rebind_alloc<self_type>;
     using transition_type = transition<self_type>;
+    using parent_pair = std::pair<char_type, self_type*>;
 
     // Disable the copy for now...
-    suffix_tree_node() : parent_(nullptr), link_(nullptr), tr_() {}
+    suffix_tree_node() : parent_({}, nullptr), link_(nullptr), tr_() {}
     suffix_tree_node(suffix_tree_node const&) = delete;
     suffix_tree_node& operator=(suffix_tree_node const&) = delete;
 
@@ -104,7 +105,7 @@ private:
         return empty_tr;
     }
 
-    suffix_tree_node *parent_; // The parent node for the current substring
+    parent_pair parent_; // The parent node for the current substring
     suffix_tree_node *link_;
     // The node has ownership of its children but not of its parent nor its
     // link

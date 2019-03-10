@@ -185,7 +185,7 @@ return_label:
                 // labeled x.b
                 using memory::allocate_unique;
                 auto r = allocate_unique<node_type>(alloc_);
-                r->parent_ = n;
+                r->parent_ = { str[0], n };
                 // Let's define the label for the transition from r to tr dest_
                 auto t_end = sview_type(
                     data(tr.sub_str_) + size(str), // starts at x
@@ -200,6 +200,7 @@ return_label:
                 // with the proper label.
                 tr.sub_str_ = sview_type(data(tr.sub_str_), size(str));
                 tr.dest_ = std::move(r);
+                new_tr_it->second.dest_->parent_ = { new_tr_it->first, r.get() };
                 ctx.add_branch_op(n, tr.sub_str_[0], t_end[0]);
                 return { false, tr.dest_.get() };
             }
@@ -228,7 +229,7 @@ return_label:
                     )
                 )
             );
-            leaf_tr_it->second.dest_->parent_ = r;
+            leaf_tr_it->second.dest_->parent_ = { leaf_tr_it->first, r };
             ctx.add_leaf_op(r, substr.back());
             if (oldr != root_.get()) {
                 oldr->link_ = r;
