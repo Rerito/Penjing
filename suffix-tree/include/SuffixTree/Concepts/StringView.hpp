@@ -1,3 +1,5 @@
+// Copyright (c) 2021, Rerito
+// SPDX-License-Identifier: MIT
 
 #pragma once
 
@@ -15,16 +17,15 @@ namespace Concepts {
  *         the String `Str` type and must be a viewable range.
  */
 template< typename Str, typename StrView >
-concept StringView =
-    String< Str > &&
+concept StringView = String< Str > && std::ranges::viewable_range< StrView > &&
     std::constructible_from<
         StrView,
-        Details::BeginType< Str >,
-        Details::BeginType< Str > > &&
+        std::ranges::iterator_t< Str >,
+        std::ranges::iterator_t< Str > > &&
     std::constructible_from<
         StrView,
-        Details::BeginType< Str const >,
-        Details::BeginType< Str > const >;
+        std::ranges::iterator_t< Str const >,
+        std::ranges::iterator_t< Str const > >;
 
 }
 }
