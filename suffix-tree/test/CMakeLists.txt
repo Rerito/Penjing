@@ -3,8 +3,9 @@
 
 add_executable(
     suffix-tree-test
-    src/concepts.cpp
-    src/main.cpp)
+    src/main.cpp
+    src/Concepts.cpp
+    src/NodeTraits.cpp)
 
 target_link_libraries(
     suffix-tree-test
