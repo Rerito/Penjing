@@ -14,5 +14,6 @@ project(suffix-tree
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparties)
-add_subdirectory(${CMAKE_SOURCE_DIR}/suffix-tree)
+add_subdirectory(thirdparties)
+add_subdirectory(meta)
+add_subdirectory(suffix-tree)
