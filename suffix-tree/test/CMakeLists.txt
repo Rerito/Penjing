@@ -6,7 +6,8 @@ add_executable(
     src/BananaFixture.cpp
     src/main.cpp
     src/Concepts.cpp
-    src/NodeTraits.cpp)
+    src/NodeTraits.cpp
+    src/SuffixTree.cpp)
 
 target_include_directories(
     suffix-tree-test
