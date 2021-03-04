@@ -6,6 +6,7 @@ add_executable(
     src/BananaFixture.cpp
     src/main.cpp
     src/Concepts.cpp
+    src/NodeStore.cpp
     src/NodeTraits.cpp
     src/SuffixTree.cpp)
 
