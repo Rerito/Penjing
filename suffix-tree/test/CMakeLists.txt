@@ -3,9 +3,15 @@
 
 add_executable(
     suffix-tree-test
+    src/BananaFixture.cpp
     src/main.cpp
     src/Concepts.cpp
     src/NodeTraits.cpp)
+
+target_include_directories(
+    suffix-tree-test
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 target_link_libraries(
     suffix-tree-test
