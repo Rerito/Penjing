@@ -8,7 +8,8 @@ add_executable(
     src/Concepts.cpp
     src/NodeStore.cpp
     src/NodeTraits.cpp
-    src/SuffixTree.cpp)
+    src/SuffixTree.cpp
+    src/Walk.cpp)
 
 target_include_directories(
     suffix-tree-test
