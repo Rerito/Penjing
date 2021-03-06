@@ -9,6 +9,7 @@ add_executable(
     src/NodeStore.cpp
     src/NodeTraits.cpp
     src/SuffixTree.cpp
+    src/Ukkonen/Canonize.cpp
     src/Walk.cpp)
 
 target_include_directories(
