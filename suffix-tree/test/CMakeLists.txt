@@ -10,6 +10,7 @@ add_executable(
     src/NodeTraits.cpp
     src/SuffixTree.cpp
     src/Ukkonen/Canonize.cpp
+    src/Ukkonen/Split.cpp
     src/Walk.cpp)
 
 target_include_directories(
