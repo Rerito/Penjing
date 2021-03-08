@@ -1,0 +1,21 @@
+BasedOnStyle:  Mozilla
+
+AlignAfterOpenBracket: AlwaysBreak
+
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+
+Cpp11BracedListStyle: true
+IndentCaseLabels: false
+
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+
+SpacesInAngles: true
+
+TabWidth: 4
+IndentWidth: 4
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+AccessModifierOffset: -4
+IndentRequires: true
