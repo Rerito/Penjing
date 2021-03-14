@@ -13,7 +13,8 @@ add_executable(
     src/SuffixTree.cpp
     src/Ukkonen/Canonize.cpp
     src/Ukkonen/TestAndSplit.cpp
-    src/Ukkonen/Split.cpp)
+    src/Ukkonen/Split.cpp
+    src/Ukkonen/Update.cpp)
 
 target_include_directories(
     suffix-tree-test
