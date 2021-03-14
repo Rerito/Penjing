@@ -3,6 +3,8 @@
 
 add_executable(
     suffix-tree-test
+    src/Algorithm/CompareNodes.cpp
+    src/Algorithm/Walk.cpp
     src/BananaFixture.cpp
     src/main.cpp
     src/Concepts.cpp
@@ -11,8 +13,7 @@ add_executable(
     src/SuffixTree.cpp
     src/Ukkonen/Canonize.cpp
     src/Ukkonen/TestAndSplit.cpp
-    src/Ukkonen/Split.cpp
-    src/Walk.cpp)
+    src/Ukkonen/Split.cpp)
 
 target_include_directories(
     suffix-tree-test
