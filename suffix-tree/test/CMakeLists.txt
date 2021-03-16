@@ -26,3 +26,5 @@ target_link_libraries(
     suffix-tree-test
     suffix-tree
     gtest_main)
+
+add_test(NAME SuffixTreeTests COMMAND suffix-tree-test)

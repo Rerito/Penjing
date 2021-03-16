@@ -10,3 +10,5 @@ target_link_libraries(
     meta-test
     meta
     gtest_main)
+
+add_test(NAME MetaTests COMMAND meta-test)
