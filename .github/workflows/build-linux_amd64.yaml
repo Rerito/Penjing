@@ -1,0 +1,71 @@
+# Copyright 2021, Rerito
+# SPDX-License-Identifier: MIT
+
+name: Linux AMD64 builds
+
+on:
+    push:
+        paths:
+            - '.github/workflows/build-linux_amd64.yaml'
+            - 'CMakeLists.txt'
+            - 'meta/**'
+            - 'suffix-tree/**'
+    pull_request:
+        paths:
+            - '.github/workflows/build-linux_amd64.yaml'
+            - 'CMakeLists.txt'
+            - 'meta/**'
+            - 'suffix-tree/**'
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                cxx:
+                    - g++-10
+                    # clang build is disabled as clang-12 is not yet available
+                    # on the builder linux image
+                    #- clang++-12
+                config:
+                    - build_type: Release
+                    - build_type: Debug
+                      valgrind: ON
+                    - build_type: Debug
+                      sanitize: address
+                    - build_type: Debug
+                      sanitize: undefined
+        
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Install Valgrind
+              if: ${{matrix.config.valgrind == 'ON'}}
+              run: sudo apt install -y valgrind
+
+            - name: Install clang
+              if: ${{matrix.cxx == 'clang++-12'}}
+              run: sudo apt install -y clang-12
+
+            - name: Configure CMake
+              working-directory: ${{runner.workspace}}
+              env:
+                  CXX: ${{matrix.cxx}}
+            
+              run: |
+                  cmake -H${{github.event.repository.name}} -Bbuild \
+                        -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} \
+                        -G"Unix Makefiles"
+
+            - name: Build
+              working-directory: ${{runner.workspace}}/build
+              run: cmake --build . --config ${{matrix.config.build_type}} -j2
+
+            - name: Run tests
+              if: ${{matrix.config.valgrind != 'ON'}}
+              env:
+                  CTEST_OUTPUT_ON_FAILURE: 1
+              working-directory: ${{runner.workspace}}/build
+              run: ctest -C ${{matrix.config.build_type}}
+
