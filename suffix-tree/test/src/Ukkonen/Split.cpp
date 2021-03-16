@@ -19,10 +19,10 @@ TEST_F(UkkonenSplitFixture, InvalidBranchingPoint)
     auto t = mutableTransition(origin, 'b');
 
     ASSERT_TRUE(!!t);
-    ASSERT_DEATH(
+    ASSERT_DEBUG_DEATH(
         SuffixTree::Builders::Ukkonen::split(origin, *t, 0, factory),
         "");
-    ASSERT_DEATH(
+    ASSERT_DEBUG_DEATH(
         SuffixTree::Builders::Ukkonen::split(
             origin,
             *t,
