@@ -11,6 +11,7 @@ add_executable(
     src/NodeStore.cpp
     src/NodeTraits.cpp
     src/SuffixTree.cpp
+    src/Ukkonen/BuildString.cpp
     src/Ukkonen/Canonize.cpp
     src/Ukkonen/TestAndSplit.cpp
     src/Ukkonen/Split.cpp
