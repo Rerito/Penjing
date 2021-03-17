@@ -14,7 +14,7 @@ namespace Ukkonen {
 namespace CPO {
 
 template< typename Canonizer, typename Updater >
-class BuildString
+class Build
     : private Algorithm::MutatingNodeAlgorithm
     , private Canonizer
     , private Updater
@@ -97,7 +97,7 @@ private:
 inline namespace Cust {
 
 template< typename Canonizer, typename Updater >
-inline constexpr CPO::BuildString< Canonizer, Updater > buildString{};
+inline constexpr CPO::Build< Canonizer, Updater > build{};
 
 } // namespace Cust
 
