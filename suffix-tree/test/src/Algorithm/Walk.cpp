@@ -1,13 +1,18 @@
 // Copyright (c) 2021, Rerito
 // SPDX-License-Identifier: MIT
 
+#include <ranges>
+
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Algorithm/Walk.hpp>
+#include <Penjing/SuffixTree/Algorithm/Walk.hpp>
 
 #include <BananaFixture.hpp>
 
-using WalkFixture = SuffixTree::Test::BananaFixture;
+using namespace Penjing::SuffixTree;
+using namespace Penjing::SuffixTree::Test;
+
+using WalkFixture = BananaFixture;
 
 TEST_F(WalkFixture, Walk)
 {
@@ -15,8 +20,7 @@ TEST_F(WalkFixture, Walk)
         std::ranges::begin(_banana) + 1,
         std::ranges::begin(_banana) + 5};
 
-    auto [node, word, mismatchIdx] =
-        SuffixTree::Algorithm::walk(n_root, anan);
+    auto [node, word, mismatchIdx] = Algorithm::walk(n_root, anan);
 
     ASSERT_EQ(&node, &n_ana);
 

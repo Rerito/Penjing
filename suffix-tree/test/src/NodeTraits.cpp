@@ -5,13 +5,13 @@
 
 #include "gtest/gtest.h"
 
-#include <SuffixTree/Core/StdUnorderedMapNodeTraits.hpp>
+#include <Penjing/SuffixTree/Core/StdUnorderedMapNodeTraits.hpp>
 
 TEST(NodeTraits, StdUnorderedMap)
 {
 
-    using Traits =
-        SuffixTree::Core::StdUnorderedMapNodeTraits< std::allocator< int > >;
+    using Traits = Penjing::SuffixTree::Core::StdUnorderedMapNodeTraits<
+        std::allocator< int > >;
 
     static_assert(
         std::is_same_v<

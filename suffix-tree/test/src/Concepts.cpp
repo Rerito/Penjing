@@ -6,12 +6,12 @@
 
 #include "gtest/gtest.h"
 
-#include <SuffixTree/Concepts/String.hpp>
-#include <SuffixTree/Concepts/StringView.hpp>
+#include <Penjing/SuffixTree/Concepts/String.hpp>
+#include <Penjing/SuffixTree/Concepts/StringView.hpp>
 
 TEST(ConceptString, BasicString)
 {
-    using SuffixTree::Concepts::String;
+    using Penjing::SuffixTree::Concepts::String;
     static_assert(
         String< std::string >,
         "std::string should satisfy the String concept");
@@ -23,7 +23,7 @@ TEST(ConceptString, BasicString)
 
 TEST(ConceptStringView, BasicStringView)
 {
-    using SuffixTree::Concepts::StringView;
+    using Penjing::SuffixTree::Concepts::StringView;
     static_assert(
         StringView< std::string, std::string_view >,
         "std::string and std::string_view should satisfy "

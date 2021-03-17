@@ -3,27 +3,28 @@
 
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Builders/Ukkonen/Split.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Split.hpp>
 
 #include <BananaFixture.hpp>
 #include <NodeFactory.hpp>
 
 using namespace std::string_literals;
 
-using UkkonenSplitFixture = SuffixTree::Test::BananaFixture;
+using namespace Penjing::SuffixTree;
+using namespace Penjing::SuffixTree::Test;
+
+using UkkonenSplitFixture = BananaFixture;
 
 TEST_F(UkkonenSplitFixture, InvalidBranchingPoint)
 {
-    SuffixTree::Test::NodeFactory< NodeType > factory;
+    NodeFactory< NodeType > factory;
     auto& origin = _nodes.at(0);
     auto t = mutableTransition(origin, 'b');
 
     ASSERT_TRUE(!!t);
+    ASSERT_DEBUG_DEATH(Builders::Ukkonen::split(origin, *t, 0, factory), "");
     ASSERT_DEBUG_DEATH(
-        SuffixTree::Builders::Ukkonen::split(origin, *t, 0, factory),
-        "");
-    ASSERT_DEBUG_DEATH(
-        SuffixTree::Builders::Ukkonen::split(
+        Builders::Ukkonen::split(
             origin,
             *t,
             std::ranges::size(_banana),
@@ -33,7 +34,7 @@ TEST_F(UkkonenSplitFixture, InvalidBranchingPoint)
 
 TEST_F(UkkonenSplitFixture, CommonSplit)
 {
-    SuffixTree::Test::NodeFactory< NodeType > factory;
+    NodeFactory< NodeType > factory;
 
     auto& origin = _nodes.at(0);
     auto t_banana_ = mutableTransition(origin, 'b');
@@ -45,8 +46,7 @@ TEST_F(UkkonenSplitFixture, CommonSplit)
     ASSERT_TRUE(!!t_banana_);
     ASSERT_EQ(label, _banana);
 
-    auto& newNode =
-        SuffixTree::Builders::Ukkonen::split(origin, *t_banana_, 3, factory);
+    auto& newNode = Builders::Ukkonen::split(origin, *t_banana_, 3, factory);
 
     ASSERT_EQ(ban, label);
     ASSERT_EQ(&newNode, (*t_banana_).get().target());

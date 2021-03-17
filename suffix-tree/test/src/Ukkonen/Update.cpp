@@ -3,17 +3,17 @@
 
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Builders/Ukkonen/Canonize.hpp>
-#include <SuffixTree/Builders/Ukkonen/Split.hpp>
-#include <SuffixTree/Builders/Ukkonen/TestAndSplit.hpp>
-#include <SuffixTree/Builders/Ukkonen/Update.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Canonize.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Split.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/TestAndSplit.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Update.hpp>
 
 #include <BananaFixture.hpp>
 #include <NodeFactory.hpp>
 
-using namespace SuffixTree::Builders::Ukkonen;
-using namespace SuffixTree::Core;
-using namespace SuffixTree::Test;
+using namespace Penjing::SuffixTree::Builders::Ukkonen;
+using namespace Penjing::SuffixTree::Core;
+using namespace Penjing::SuffixTree::Test;
 
 using UkkonenUpdateFixture = BananaFixture;
 

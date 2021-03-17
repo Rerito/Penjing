@@ -6,8 +6,9 @@
 #include <iostream>
 #include <string>
 
-#include <SuffixTree/Concepts/Node.hpp>
+#include <Penjing/SuffixTree/Concepts/Node.hpp>
 
+namespace Penjing {
 namespace SuffixTree {
 namespace Test {
 
@@ -48,3 +49,4 @@ inline constexpr Dump dump{};
 
 } // namespace Test
 } // namespace SuffixTree
+} // namespace Penjing

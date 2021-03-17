@@ -3,20 +3,21 @@
 
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Algorithm/CompareNodes.hpp>
+#include <Penjing/SuffixTree/Algorithm/CompareNodes.hpp>
 
-#include <SuffixTree/Builders/Ukkonen/BuildString.hpp>
-#include <SuffixTree/Builders/Ukkonen/Canonize.hpp>
-#include <SuffixTree/Builders/Ukkonen/Split.hpp>
-#include <SuffixTree/Builders/Ukkonen/TestAndSplit.hpp>
-#include <SuffixTree/Builders/Ukkonen/Update.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/BuildString.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Canonize.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Split.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/TestAndSplit.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Update.hpp>
 
 #include <BananaFixture.hpp>
-#include <NodeFactory.hpp>
 #include <Dump.hpp>
+#include <NodeFactory.hpp>
 
-using namespace SuffixTree::Builders::Ukkonen;
-using namespace SuffixTree::Test;
+using namespace Penjing::SuffixTree;
+using namespace Penjing::SuffixTree::Test;
+using namespace Penjing::SuffixTree::Builders::Ukkonen;
 
 using UkkonenBuildStringFixture = BananaFixture;
 
@@ -40,7 +41,7 @@ TEST_F(UkkonenBuildStringFixture, Build)
 
     auto& root = factory();
     ::buildString(root, _banana, factory);
-    EXPECT_TRUE(SuffixTree::Algorithm::compareNodes(root, _nodes.at(0)));
+    EXPECT_TRUE(Algorithm::compareNodes(root, _nodes.at(0)));
 
     std::string cacao = "cacao$";
     ::buildString(root, cacao, factory);
@@ -50,5 +51,15 @@ TEST_F(UkkonenBuildStringFixture, Build)
 
     std::string burundi = "burundi$";
     ::buildString(root, burundi, factory);
+    dump(root, std::cout);
+}
+
+TEST_F(UkkonenBuildStringFixture, mississippixsissy)
+{
+    NodeFactory< NodeType > factory{};
+
+    auto& root = factory();
+    std::string test = "mississippixsissy$";
+    ::buildString(root, test, factory);
     dump(root, std::cout);
 }

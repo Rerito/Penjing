@@ -3,21 +3,23 @@
 
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Builders/Ukkonen/Split.hpp>
-#include <SuffixTree/Builders/Ukkonen/TestAndSplit.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Split.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/TestAndSplit.hpp>
 
 #include <BananaFixture.hpp>
 #include <NodeFactory.hpp>
 
 using namespace std::string_literals;
-using namespace SuffixTree;
-using namespace SuffixTree::Builders::Ukkonen;
 
-using UkkonenTestAndSplitFixture = SuffixTree::Test::BananaFixture;
+using namespace Penjing::SuffixTree;
+using namespace Penjing::SuffixTree::Test;
+using namespace Penjing::SuffixTree::Builders::Ukkonen;
+
+using UkkonenTestAndSplitFixture = BananaFixture;
 
 TEST_F(UkkonenTestAndSplitFixture, Common)
 {
-    SuffixTree::Test::NodeFactory< NodeType > factory;
+    NodeFactory< NodeType > factory;
 
     auto& origin = _nodes.at(0);
 
@@ -42,7 +44,7 @@ TEST_F(UkkonenTestAndSplitFixture, Common)
 
 TEST_F(UkkonenTestAndSplitFixture, EndPoint)
 {
-    SuffixTree::Test::NodeFactory< NodeType > factory;
+    NodeFactory< NodeType > factory;
 
     auto& origin = _nodes.at(0);
     std::string ban = "ban";
