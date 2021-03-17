@@ -5,7 +5,7 @@
 
 #include <Penjing/SuffixTree/Algorithm/CompareNodes.hpp>
 
-#include <Penjing/SuffixTree/Builders/Ukkonen/BuildString.hpp>
+#include <Penjing/SuffixTree/Builders/Ukkonen/Build.hpp>
 #include <Penjing/SuffixTree/Builders/Ukkonen/Canonize.hpp>
 #include <Penjing/SuffixTree/Builders/Ukkonen/Split.hpp>
 #include <Penjing/SuffixTree/Builders/Ukkonen/TestAndSplit.hpp>
@@ -19,47 +19,47 @@ using namespace Penjing::SuffixTree;
 using namespace Penjing::SuffixTree::Test;
 using namespace Penjing::SuffixTree::Builders::Ukkonen;
 
-using UkkonenBuildStringFixture = BananaFixture;
+using UkkonenBuildFixture = BananaFixture;
 
-inline constexpr CPO::BuildString<
+inline constexpr CPO::Build<
     CanonizePolicy,
     UpdatePolicy< CanonizePolicy, TestAndSplitPolicy< SplitPolicy > > >
-    buildString{};
+    build{};
 
-TEST_F(UkkonenBuildStringFixture, Mississipi)
+TEST_F(UkkonenBuildFixture, Mississipi)
 {
     NodeFactory< NodeType > factory{};
     auto& root = factory();
     std::string mississipi = "mississipi$";
-    ::buildString(root, mississipi, factory);
+    ::build(root, mississipi, factory);
     dump(root, std::cout);
 }
 
-TEST_F(UkkonenBuildStringFixture, Build)
+TEST_F(UkkonenBuildFixture, Build)
 {
     NodeFactory< NodeType > factory{};
 
     auto& root = factory();
-    ::buildString(root, _banana, factory);
+    ::build(root, _banana, factory);
     EXPECT_TRUE(Algorithm::compareNodes(root, _nodes.at(0)));
 
     std::string cacao = "cacao$";
-    ::buildString(root, cacao, factory);
+    ::build(root, cacao, factory);
 
     std::string curacao = "curacao$";
-    ::buildString(root, curacao, factory);
+    ::build(root, curacao, factory);
 
     std::string burundi = "burundi$";
-    ::buildString(root, burundi, factory);
+    ::build(root, burundi, factory);
     dump(root, std::cout);
 }
 
-TEST_F(UkkonenBuildStringFixture, mississippixsissy)
+TEST_F(UkkonenBuildFixture, mississippixsissy)
 {
     NodeFactory< NodeType > factory{};
 
     auto& root = factory();
     std::string test = "mississippixsissy$";
-    ::buildString(root, test, factory);
+    ::build(root, test, factory);
     dump(root, std::cout);
 }
