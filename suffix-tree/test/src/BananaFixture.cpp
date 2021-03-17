@@ -5,6 +5,7 @@
 
 #include <BananaFixture.hpp>
 
+namespace Penjing {
 namespace SuffixTree {
 namespace Test {
 
@@ -43,3 +44,4 @@ BananaFixture::BananaFixture()
 
 } // namespace Test
 } // namespace SuffixTree
+} // namespace Penjing

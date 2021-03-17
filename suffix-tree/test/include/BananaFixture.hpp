@@ -10,10 +10,11 @@
 
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Algorithm/MutatingNodeAlgorithm.hpp>
-#include <SuffixTree/Core/Node.hpp>
-#include <SuffixTree/Core/StdUnorderedMapNodeTraits.hpp>
+#include <Penjing/SuffixTree/Algorithm/MutatingNodeAlgorithm.hpp>
+#include <Penjing/SuffixTree/Core/Node.hpp>
+#include <Penjing/SuffixTree/Core/StdUnorderedMapNodeTraits.hpp>
 
+namespace Penjing {
 namespace SuffixTree {
 namespace Test {
 
@@ -58,3 +59,4 @@ protected:
 
 } // namespace Test
 } // namespace SuffixTree
+} // namespace Penjing

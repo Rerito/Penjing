@@ -5,9 +5,10 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-project(suffix-tree
+project(
+    Penjing
     VERSION 1.0
-    DESCRIPTION "A C++ Suffix Tree Implementation"
+    DESCRIPTION "A C++ Header-Only library exposing suffix tree algorithms"
     LANGUAGES CXX
 )
 

@@ -3,19 +3,19 @@
 
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Core/ArrayListStorage.hpp>
-#include <SuffixTree/Core/NodeStore.hpp>
+#include <Penjing/SuffixTree/Core/ArrayListStorage.hpp>
+#include <Penjing/SuffixTree/Core/NodeStore.hpp>
 
-using StorageTraits =
-    SuffixTree::Core::ArrayListStorageTraits< std::allocator< int >, 16u >;
-using NodeStore = SuffixTree::Core::NodeStore< int, StorageTraits >;
+using StorageTraits = Penjing::SuffixTree::Core::
+    ArrayListStorageTraits< std::allocator< int >, 16u >;
+using NodeStore = Penjing::SuffixTree::Core::NodeStore< int, StorageTraits >;
 
 TEST(NodeStore, StaticChecks)
 {
     static_assert(
         std::is_same_v<
             NodeStore::NodeElement,
-            Meta::SelfVariant< std::monostate, int > >,
+            Penjing::Meta::SelfVariant< std::monostate, int > >,
         "NodeElement should be a SelfVariant to allow free-list recycling");
 }
 

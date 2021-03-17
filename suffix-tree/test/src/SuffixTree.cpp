@@ -5,11 +5,12 @@
 
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Core/Tree.hpp>
+#include <Penjing/SuffixTree/Core/Tree.hpp>
 
 TEST(CoreTree, Creation)
 {
-    using TreeType = SuffixTree::Core::Tree< std::string, std::string_view >;
+    using TreeType =
+        Penjing::SuffixTree::Core::Tree< std::string, std::string_view >;
 
     using NodeType = TreeType::NodeType;
     using TransitionType = NodeType::TransitionType;

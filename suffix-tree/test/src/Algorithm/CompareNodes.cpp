@@ -3,16 +3,17 @@
 
 #include <gtest/gtest.h>
 
-#include <SuffixTree/Algorithm/CompareNodes.hpp>
+#include <Penjing/SuffixTree/Algorithm/CompareNodes.hpp>
 
 #include <BananaFixture.hpp>
 
-using CompareNodesFixture = SuffixTree::Test::BananaFixture;
+using namespace Penjing::SuffixTree;
+using namespace Penjing::SuffixTree::Test;
+
+using CompareNodesFixture = BananaFixture;
 
 TEST_F(CompareNodesFixture, Compare)
 {
-    ASSERT_TRUE(
-        SuffixTree::Algorithm::compareNodes(_nodes.at(0), _nodes.at(0)));
-    ASSERT_FALSE(
-        SuffixTree::Algorithm::compareNodes(_nodes.at(0), _nodes.at(1)));
+    ASSERT_TRUE(Algorithm::compareNodes(_nodes.at(0), _nodes.at(0)));
+    ASSERT_FALSE(Algorithm::compareNodes(_nodes.at(0), _nodes.at(1)));
 }

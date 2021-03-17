@@ -7,17 +7,17 @@
 
 #include <gtest/gtest.h>
 
-#include <Meta/CustomizationPoints/Mapped.hpp>
+#include <Penjing/Meta/CustomizationPoints/Mapped.hpp>
 
 TEST(CustomizationPoints, mappedAt)
 {
     std::unordered_map< int, int > m{{1, 2}, {3, 4}, {5, 6}};
 
-    auto at1 = Meta::mappedAt(m, 1);
+    auto at1 = Penjing::Meta::mappedAt(m, 1);
     ASSERT_TRUE(!!at1);
     ASSERT_EQ(2, *at1);
 
-    auto at2 = Meta::mappedAt(m, 2);
+    auto at2 = Penjing::Meta::mappedAt(m, 2);
     ASSERT_TRUE(!at2);
 }
 
@@ -25,10 +25,10 @@ TEST(CustomizationPoints, unsafeMappedAt)
 {
     std::unordered_map< int, int > m{{1, 2}, {3, 4}, {5, 6}};
 
-    int& at1 = Meta::unsafeMappedAt(m, 1);
+    int& at1 = Penjing::Meta::unsafeMappedAt(m, 1);
     ASSERT_EQ(at1, 2);
 
-    ASSERT_THROW(Meta::unsafeMappedAt(m, 2), std::invalid_argument);
+    ASSERT_THROW(Penjing::Meta::unsafeMappedAt(m, 2), std::invalid_argument);
 }
 
 TEST(CustomizationPoints, mapped)
@@ -38,7 +38,7 @@ TEST(CustomizationPoints, mapped)
     std::vector< int > values{2, 4, 6};
     std::vector< int > result;
 
-    std::ranges::copy(Meta::mapped(m), std::back_inserter(result));
+    std::ranges::copy(Penjing::Meta::mapped(m), std::back_inserter(result));
 
     ASSERT_EQ(values, result);
 }

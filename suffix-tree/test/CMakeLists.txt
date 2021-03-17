@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 add_executable(
-    suffix-tree-test
+    penjing-suffix-tree-test
     src/Algorithm/CompareNodes.cpp
     src/Algorithm/Walk.cpp
     src/BananaFixture.cpp
@@ -18,13 +18,13 @@ add_executable(
     src/Ukkonen/Update.cpp)
 
 target_include_directories(
-    suffix-tree-test
+    penjing-suffix-tree-test
     PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 target_link_libraries(
-    suffix-tree-test
-    suffix-tree
+    penjing-suffix-tree-test
+    penjing-suffix-tree
     gtest_main)
 
-add_test(NAME SuffixTreeTests COMMAND suffix-tree-test)
+add_test(NAME PenjingSuffixTreeTests COMMAND penjing-suffix-tree-test)
