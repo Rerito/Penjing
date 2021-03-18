@@ -12,7 +12,6 @@
 #include <Penjing/Meta/CustomizationPoints/Mapped.hpp>
 #include <Penjing/Meta/Memory.hpp>
 
-#include "../Concepts/NodeTraits.hpp"
 #include "../Concepts/String.hpp"
 #include "../Concepts/StringView.hpp"
 
@@ -31,8 +30,7 @@ class MutatingNodeAlgorithm;
 namespace Core {
 
 template< typename Str, typename StrView, typename NodeTraits >
-    requires Concepts::String< Str > && Concepts::StringView< Str, StrView > &&
-        Concepts::NodeTraits< NodeTraits >
+    requires Concepts::String< Str > && Concepts::StringView< Str, StrView >
 class Node
 {
 public:

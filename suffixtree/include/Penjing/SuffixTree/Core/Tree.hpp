@@ -10,7 +10,6 @@
 #include <Penjing/Storage/Bindings/StdUnorderedMap.hpp>
 #include <Penjing/Storage/Store.hpp>
 
-#include "../Concepts/NodeTraits.hpp"
 #include "../Concepts/String.hpp"
 #include "../Concepts/StringView.hpp"
 
@@ -34,8 +33,7 @@ template<
         Storage::Bindings::StdUnorderedMap< std::allocator< Str > >,
     typename StorageTraits =
         Storage::Bindings::ArrayList< std::allocator< Str >, 64u > >
-    requires Concepts::String< Str > && Concepts::StringView< Str, StrView > &&
-        Concepts::NodeTraits< NodeTraits >
+    requires Concepts::String< Str > && Concepts::StringView< Str, StrView >
 class Tree
 {
 public:

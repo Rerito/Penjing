@@ -28,7 +28,7 @@ template<
     typename KeyEqual = Meta::CurryTemplate< std::equal_to > >
 struct StdUnorderedMap
 {
-    using TransitionAllocator = StorageAlloc;
+    using AllocatorType = StorageAlloc;
 
     template< typename K, typename V >
     using StorageType = std::unordered_map<
