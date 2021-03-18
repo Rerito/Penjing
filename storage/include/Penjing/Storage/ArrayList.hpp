@@ -12,8 +12,7 @@
 #include <variant>
 
 namespace Penjing {
-namespace SuffixTree {
-namespace Core {
+namespace Storage {
 
 namespace Traits {
 
@@ -30,7 +29,7 @@ using IsMonoStateVariant = decltype(isMonoStateVariant(
 } // namespace Traits
 
 template< typename Value, typename Alloc, size_t ArraySize >
-class ArrayListStorage
+class ArrayList
 {
 private:
     static constexpr bool _useOptional()
@@ -88,25 +87,5 @@ private:
     }
 };
 
-template< typename Alloc, size_t ArraySize >
-struct ArrayListStorageTraits
-{
-    using AllocatorType = Alloc;
-
-    template< typename Value >
-    using StorageType = ArrayListStorage< Value, Alloc, ArraySize >;
-
-    template< typename Value, typename... Args >
-    static Value& emplace(
-        ArrayListStorage< Value, Alloc, ArraySize >& storage,
-        Args&&... args) noexcept(noexcept(storage
-                                              .emplace(
-                                                  std::declval< Args&& >()...)))
-    {
-        return storage.emplace(std::forward< Args >(args)...);
-    }
-};
-
-} // namespace Core
-} // namespace SuffixTree
+} // namespace Storage
 } // namespace Penjing

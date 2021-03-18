@@ -9,13 +9,13 @@
 #include <Penjing/Meta/CurryTemplate.hpp>
 
 namespace Penjing {
-namespace SuffixTree {
-namespace Core {
+namespace Storage {
+namespace Bindings {
 
-// NodeTraits implementation using std::unordered_map.
+// Container binding implementation using std::unordered_map.
 // The template takes 3 parameters:
-//  - StorageAlloc The allocator for the node's internal map (rebound using
-//    std::allocator_traits) of transitions.
+//  - StorageAlloc The allocator for the container type (rebound using
+//    std::allocator_traits).
 //  - Hash A Kvasir style metafunction returning the hash type for the map.
 //    default: A metafunction returning `std::hash< T >` for the input type T
 //  - KeyEqual A Kvasir style metafunction returning the comparison type for
@@ -26,7 +26,7 @@ template<
     typename StorageAlloc,
     typename Hash = Meta::CurryTemplate< std::hash >,
     typename KeyEqual = Meta::CurryTemplate< std::equal_to > >
-struct StdUnorderedMapNodeTraits
+struct StdUnorderedMap
 {
     using TransitionAllocator = StorageAlloc;
 
@@ -40,6 +40,6 @@ struct StdUnorderedMapNodeTraits
             std::pair< K const, V > > >;
 };
 
-} // namespace Core
-} // namespace SuffixTree
+} // namespace Bindings
+} // namespace Storage
 } // namespace Penjing
