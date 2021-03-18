@@ -19,4 +19,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 add_subdirectory(thirdparties)
 add_subdirectory(meta)
-add_subdirectory(suffix-tree)
+add_subdirectory(suffixtree)
