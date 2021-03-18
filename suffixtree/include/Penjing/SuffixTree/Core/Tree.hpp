@@ -6,14 +6,15 @@
 #include <memory>
 #include <ranges>
 
+#include <Penjing/Storage/Bindings/ArrayList.hpp>
+#include <Penjing/Storage/Bindings/StdUnorderedMap.hpp>
+#include <Penjing/Storage/Store.hpp>
+
 #include "../Concepts/NodeTraits.hpp"
 #include "../Concepts/String.hpp"
 #include "../Concepts/StringView.hpp"
 
-#include "ArrayListStorage.hpp"
 #include "Node.hpp"
-#include "NodeStore.hpp"
-#include "StdUnorderedMapNodeTraits.hpp"
 
 namespace Penjing {
 namespace SuffixTree {
@@ -29,9 +30,10 @@ namespace Core {
 template<
     typename Str,
     typename StrView,
-    typename NodeTraits = StdUnorderedMapNodeTraits< std::allocator< Str > >,
+    typename NodeTraits =
+        Storage::Bindings::StdUnorderedMap< std::allocator< Str > >,
     typename StorageTraits =
-        ArrayListStorageTraits< std::allocator< Str >, 64u > >
+        Storage::Bindings::ArrayList< std::allocator< Str >, 64u > >
     requires Concepts::String< Str > && Concepts::StringView< Str, StrView > &&
         Concepts::NodeTraits< NodeTraits >
 class Tree
@@ -44,7 +46,7 @@ public:
         std::allocator_traits< typename StorageTraits::AllocatorType >::
             template rebind_alloc< NodeType >;
 
-    using NodeStorage = NodeStore< NodeType, StorageTraits >;
+    using NodeStorage = Storage::Store< NodeType, StorageTraits >;
 
 private:
     NodeStorage _storage;
@@ -55,10 +57,10 @@ public:
     constexpr decltype(auto) addNode(
         Meta::Access< Algorithm::MutatingTreeAlgorithm >,
         Args&&... args) noexcept(noexcept(this->_storage
-                                              .addNode(
+                                              .emplace(
                                                   std::declval< Args&& >()...)))
     {
-        return _storage.addNode(std::forward< Args >(args)...);
+        return _storage.emplace(std::forward< Args >(args)...);
     }
 
     // TODO: Support actual removal

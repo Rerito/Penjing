@@ -10,9 +10,10 @@
 
 #include <gtest/gtest.h>
 
+#include <Penjing/Storage/Bindings/StdUnorderedMap.hpp>
+
 #include <Penjing/SuffixTree/Algorithm/MutatingNodeAlgorithm.hpp>
 #include <Penjing/SuffixTree/Core/Node.hpp>
-#include <Penjing/SuffixTree/Core/StdUnorderedMapNodeTraits.hpp>
 
 namespace Penjing {
 namespace SuffixTree {
@@ -27,7 +28,7 @@ protected:
     using NodeType = Core::Node<
         std::string,
         std::string_view,
-        Core::StdUnorderedMapNodeTraits< std::allocator< std::string > > >;
+        Storage::Bindings::StdUnorderedMap< std::allocator< std::string > > >;
 
     BananaFixture();
     ~BananaFixture() = default;
