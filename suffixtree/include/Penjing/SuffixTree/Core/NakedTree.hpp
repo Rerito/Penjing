@@ -34,7 +34,7 @@ template<
     typename StorageTraits =
         Storage::Bindings::ArrayList< std::allocator< Str >, 64u > >
     requires Concepts::String< Str > && Concepts::StringView< Str, StrView >
-class Tree
+class NakedTree
 {
 public:
     using CharType = std::ranges::range_value_t< Str >;
