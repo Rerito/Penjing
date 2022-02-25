@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include <Penjing/Storage/Bindings/StdUnorderedMap.hpp>
+#include <Penjing/Storage/Bindings/StdMap.hpp>
 
 #include <Penjing/SuffixTree/Algorithm/MutatingNodeAlgorithm.hpp>
 #include <Penjing/SuffixTree/Core/Node.hpp>
@@ -28,7 +28,7 @@ protected:
     using NodeType = Core::Node<
         std::string,
         std::string_view,
-        Storage::Bindings::StdUnorderedMap< std::allocator< std::string > > >;
+        Storage::Bindings::StdMap< std::allocator< std::string > > >;
 
     BananaFixture();
     ~BananaFixture() = default;

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -14,7 +14,7 @@ namespace Test {
 
 class Dump
 {
-
+private:
     template< typename Node >
         requires(Concepts::Node< Node >)
     constexpr void dump(Node const& node, std::ostream& ostream, size_t offset)
