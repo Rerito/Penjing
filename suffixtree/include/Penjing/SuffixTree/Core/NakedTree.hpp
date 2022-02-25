@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -52,19 +52,16 @@ private:
 
 public:
     template< typename... Args >
-    constexpr decltype(auto) addNode(
-        Meta::Access< Algorithm::MutatingTreeAlgorithm >,
-        Args&&... args) noexcept(noexcept(this->_storage
-                                              .emplace(
-                                                  std::declval< Args&& >()...)))
+    constexpr decltype(auto) addNode(Args&&... args) noexcept(
+        noexcept(this->_storage.emplace(std::declval< Args&& >()...)))
     {
         return _storage.emplace(std::forward< Args >(args)...);
     }
 
     // TODO: Support actual removal
-    constexpr void removeNode(
-        Meta::Access< Algorithm::MutatingTreeAlgorithm >,
-        NodeType& node) = delete;
+    constexpr void removeNode(NodeType& node) = delete;
+
+    constexpr NodeType& mutableRoot() noexcept { return _root; }
 };
 
 } // namespace Core
