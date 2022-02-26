@@ -26,6 +26,9 @@ class MutatingTreeAlgorithm;
 
 namespace Core {
 
+// A NakedTree is a suffix tree that only manages its own nodes.
+// It works with string views and assumes that the views will remain valid
+// during the tree lifecycle.
 template<
     typename Str,
     typename StrView,
@@ -37,6 +40,8 @@ template<
 class NakedTree
 {
 public:
+    using StringType = Str;
+    using StringViewType = StrView;
     using CharType = std::ranges::range_value_t< Str >;
     using DiffType = std::ranges::range_difference_t< Str >;
     using NodeType = Node< Str, StrView, NodeTraits >;
@@ -58,10 +63,15 @@ public:
         return _storage.emplace(std::forward< Args >(args)...);
     }
 
-    // TODO: Support actual removal
-    constexpr void removeNode(NodeType& node) = delete;
-
     constexpr NodeType& mutableRoot() noexcept { return _root; }
+    constexpr NodeType const& root() const noexcept{ return _root; }
+
+    constexpr auto nodeFactory()
+    {
+        return [this](auto&&... args) -> decltype(auto) {
+            return addNode(std::forward< decltype(args) >(args)...);
+        };
+    }
 };
 
 } // namespace Core
