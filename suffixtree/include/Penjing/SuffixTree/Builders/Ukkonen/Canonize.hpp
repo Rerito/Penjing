@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -80,17 +80,6 @@ inline namespace Cust {
 inline constexpr CPO::Canonize canonize{};
 
 } // namespace Cust
-
-struct CanonizePolicy
-{
-    template< typename Node, typename StrView >
-    constexpr auto canonize(Node const& node, StrView&& wordPath) const
-        noexcept(
-            noexcept(Cust::canonize(node, std::forward< StrView >(wordPath))))
-    {
-        return Cust::canonize(node, std::forward< StrView >(wordPath));
-    }
-};
 
 } // namespace Ukkonen
 } // namespace Builders

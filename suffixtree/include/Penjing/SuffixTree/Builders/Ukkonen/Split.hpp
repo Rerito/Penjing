@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -19,7 +19,7 @@ namespace Ukkonen {
 namespace CPO {
 
 // /!\ Do not use Split outside of Ukkonen builder
-class Split : private Algorithm::MutatingNodeAlgorithm
+class Split : public Algorithm::MutatingNodeAlgorithm
 {
 private:
     template< typename Node, typename NodeFactory >
@@ -86,29 +86,6 @@ inline namespace Cust {
 inline constexpr CPO::Split split{};
 
 } // namespace Cust
-
-struct SplitPolicy
-{
-    template< typename Node, typename NodeFactory >
-    constexpr decltype(auto) split(
-        Node& node,
-        typename Node::TransitionType& branch,
-        std::ranges::range_difference_t< typename Node::StringViewType >
-            branchingPoint,
-        NodeFactory&& factory) const
-        noexcept(noexcept(Cust::split(
-            node,
-            branch,
-            branchingPoint,
-            std::forward< NodeFactory >(factory))))
-    {
-        return Cust::split(
-            node,
-            branch,
-            branchingPoint,
-            std::forward< NodeFactory >(factory));
-    }
-};
 
 } // namespace Ukkonen
 } // namespace Builders

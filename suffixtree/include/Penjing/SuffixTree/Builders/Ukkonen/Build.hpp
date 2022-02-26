@@ -1,10 +1,13 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
 
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
 #include "../../Algorithm/Walk.hpp"
+
+#include "Canonize.hpp"
+#include "Update.hpp"
 
 namespace Penjing {
 namespace SuffixTree {
@@ -13,16 +16,9 @@ namespace Ukkonen {
 
 namespace CPO {
 
-template< typename Canonizer, typename Updater >
-class Build
-    : private Algorithm::MutatingNodeAlgorithm
-    , private Canonizer
-    , private Updater
+template< auto Canonize = Cust::canonize, auto Update = Cust::update<> >
+class Build : public Algorithm::MutatingNodeAlgorithm
 {
-private:
-    using Canonizer::canonize;
-    using Updater::update;
-
 private:
     // TODO: Write proper noexcept specifier
     template< typename Node, typename NodeFactory >
@@ -52,7 +48,7 @@ public:
 
             // label is the proper view on the string for the next insertion
             // However it still needs to be canonized
-            std::tie(activeNode, label) = update(
+            std::tie(activeNode, label) = Update(
                 root,
                 activeNode.get(),
                 toInsert,
@@ -60,7 +56,7 @@ public:
                 makeNode);
 
             auto [canonizedActiveNode, canonizedLabel] =
-                canonize(activeNode.get(), label);
+                Canonize(activeNode.get(), label);
             label = std::move(canonizedLabel);
 
             // To be able to properly perform the next insertion, we have to
@@ -96,8 +92,8 @@ private:
 
 inline namespace Cust {
 
-template< typename Canonizer, typename Updater >
-inline constexpr CPO::Build< Canonizer, Updater > build{};
+template< auto Canonize = canonize, auto Update = update<> >
+inline constexpr CPO::Build< Canonize, Update > build{};
 
 } // namespace Cust
 

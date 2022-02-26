@@ -25,11 +25,6 @@ using namespace Penjing::SuffixTree;
 using namespace Penjing::SuffixTree::Test;
 using namespace Penjing::SuffixTree::Builders::Ukkonen;
 
-inline constexpr CPO::Build<
-    CanonizePolicy,
-    UpdatePolicy< CanonizePolicy, TestAndSplitPolicy< SplitPolicy > > >
-    build{};
-
 using NodeType = Core::Node<
     std::string,
     std::string_view,
@@ -59,7 +54,7 @@ void treeBuildTest(std::string const& str, std::string const& expectedTree)
     NodeFactory< NodeType > factory{};
     std::stringstream output;
     auto& root = factory();
-    ::build(root, str, factory);
+    build<>(root, str, factory);
     toStream(root, output);
 
     ASSERT_EQ(output.str(), expectedTree);
@@ -93,16 +88,16 @@ TEST(UkkonenBuild, GST)
 
     std::string banana = "banana$";
     auto& root = factory();
-    ::build(root, banana, factory);
+    build<>(root, banana, factory);
 
     std::string cacao = "cacao$";
-    ::build(root, cacao, factory);
+    build<>(root, cacao, factory);
 
     std::string curacao = "curacao$";
-    ::build(root, curacao, factory);
+    build<>(root, curacao, factory);
 
     std::string burundi = "burundi$";
-    ::build(root, burundi, factory);
+    build<>(root, burundi, factory);
     dump(root, std::cout);
 }
 
