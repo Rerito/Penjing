@@ -98,6 +98,10 @@ inline constexpr CPO::Build< Canonize, Update > build{};
 } // namespace Cust
 
 } // namespace Ukkonen
+
+// Convenience alias for the Ukkonen suffix tree builder.
+inline constexpr auto ukkonen = Ukkonen::build<>;
+
 } // namespace Builders
 } // namespace SuffixTree
 } // namespace Penjing

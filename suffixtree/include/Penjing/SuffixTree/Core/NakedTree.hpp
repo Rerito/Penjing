@@ -64,7 +64,7 @@ public:
     }
 
     constexpr NodeType& mutableRoot() noexcept { return _root; }
-    constexpr NodeType const& root() const noexcept{ return _root; }
+    constexpr NodeType const& root() const noexcept { return _root; }
 
     constexpr auto nodeFactory()
     {
