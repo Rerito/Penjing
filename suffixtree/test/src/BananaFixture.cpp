@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #include <ranges>
@@ -30,7 +30,7 @@ BananaFixture::BananaFixture()
     addTransition(n_root, {start + 1, start + 2}, &n_a);
     addTransition(n_root, {start, end}, &n_banana_);
     addTransition(n_root, {start + 2, start + 4}, &n_na);
-    addTransition(n_root, {start+6, end}, &n_);
+    addTransition(n_root, {start + 6, end}, &n_);
 
     addTransition(n_a, {end - 1, end}, &n_a_);
     addTransition(n_a, {start + 2, start + 4}, &n_ana);
