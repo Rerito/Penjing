@@ -23,6 +23,6 @@ target_include_directories(
 target_link_libraries(
     penjing-suffixtree-test
     penjing-suffixtree
-    gtest_main)
+    GTest::GTest)
 
 add_test(NAME PenjingSuffixTreeTests COMMAND penjing-suffixtree-test)
