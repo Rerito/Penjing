@@ -9,6 +9,6 @@ add_executable(
 target_link_libraries(
     penjing-meta-test
     penjing-meta
-    gtest_main)
+    GTest::GTest)
 
 add_test(NAME PenjingMetaTests COMMAND penjing-meta-test)

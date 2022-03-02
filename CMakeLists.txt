@@ -1,4 +1,4 @@
-# Copyright (c) 2021, Rerito
+# Copyright (c) 2021-2022, Rerito
 # SPDX-License-Identifier: MIT
 
 cmake_minimum_required(VERSION 3.10)
@@ -12,12 +12,13 @@ project(
     LANGUAGES CXX
 )
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 20)
+
+find_package(GTest 1.11 REQUIRED)
+
 enable_testing()
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-
-add_subdirectory(thirdparties)
 add_subdirectory(meta)
 add_subdirectory(storage)
 add_subdirectory(suffixtree)

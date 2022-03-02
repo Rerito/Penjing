@@ -8,6 +8,6 @@ add_executable(
 target_link_libraries(
     penjing-storage-test
     penjing-storage
-    gtest_main)
+    GTest::GTest)
 
 add_test(NAME PenjingStorageTests COMMAND penjing-storage-test)
