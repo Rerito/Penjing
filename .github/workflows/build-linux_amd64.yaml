@@ -9,13 +9,15 @@ on:
             - '.github/workflows/build-linux_amd64.yaml'
             - 'CMakeLists.txt'
             - 'meta/**'
-            - 'suffix-tree/**'
+            - 'storage/**'
+            - 'suffixtree/**'
     pull_request:
         paths:
             - '.github/workflows/build-linux_amd64.yaml'
             - 'CMakeLists.txt'
             - 'meta/**'
-            - 'suffix-tree/**'
+            - 'storage/**'
+            - 'suffixtree/**'
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -25,9 +27,9 @@ jobs:
             matrix:
                 cxx:
                     - g++-10
-                    # clang build is disabled as clang-12 is not yet available
+                    # clang build is disabled as clang-13 is not yet available
                     # on the builder linux image
-                    #- clang++-12
+                    #- clang++-13
                 config:
                     - build_type: Release
                     - build_type: Debug
@@ -42,11 +44,14 @@ jobs:
 
             - name: Install Valgrind
               if: ${{matrix.config.valgrind == 'ON'}}
-              run: sudo apt install -y valgrind
+              run: sudo apt update && sudo apt install -y valgrind
 
             - name: Install clang
-              if: ${{matrix.cxx == 'clang++-12'}}
-              run: sudo apt install -y clang-12
+              if: ${{matrix.cxx == 'clang++-13'}}
+              run: sudo apt install -y clang-13
+
+            - name: Install GTest
+              run: sudo apt install libgtest-dev
 
             - name: Configure CMake
               working-directory: ${{runner.workspace}}
