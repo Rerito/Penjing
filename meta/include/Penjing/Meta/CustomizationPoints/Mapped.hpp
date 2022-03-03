@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -108,7 +108,7 @@ struct MappedAt : private OnFailedAccess
             Details::HasSecond< std::ranges::range_value_t< Range > >
     constexpr auto operator()(Range& range, Key&& key) const noexcept(
         noexcept(std::forward< Range >(range).find(std::forward< Key >(key))))
-        -> typename OnFailedAccess::MappedType<
+        -> typename OnFailedAccess::template MappedType<
             decltype((std::declval< std::ranges::range_reference_t< Range& > >()
                           .second)) >
     {
