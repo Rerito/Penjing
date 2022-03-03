@@ -1,4 +1,4 @@
-# Copyright (c) 2021, Rerito
+# Copyright (c) 2021-2022, Rerito
 # SPDX-License-Identifier: MIT
 
 add_library(penjing-storage INTERFACE)
@@ -12,6 +12,11 @@ target_include_directories(
 target_link_libraries(
     penjing-storage
     INTERFACE
-        penjing-meta)
+        penjing::meta)
 
-add_subdirectory(test)
+add_library(penjing::storage ALIAS penjing-storage)
+
+install(
+    DIRECTORY include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
