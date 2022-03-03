@@ -1,19 +1,14 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
 
-#include <memory>
-#include <ranges>
+#include <Penjing/Meta/Access.hpp>
 
 #include <Penjing/Storage/Bindings/ArrayList.hpp>
-#include <Penjing/Storage/Bindings/StdUnorderedMap.hpp>
 #include <Penjing/Storage/Store.hpp>
 
-#include "../Concepts/String.hpp"
-#include "../Concepts/StringView.hpp"
-
-#include "Node.hpp"
+#include "../Concepts/HasStringStorage.hpp"
 
 namespace Penjing {
 namespace SuffixTree {
@@ -26,47 +21,55 @@ class MutatingTreeAlgorithm;
 
 namespace Core {
 
+// The Tree class is a self-sufficient (generalized) suffix tree class:
+// It holds the strings being added to the tree on top of the tree itself.
 template<
-    typename Str,
-    typename StrView,
-    typename NodeTraits =
-        Storage::Bindings::StdUnorderedMap< std::allocator< Str > >,
-    typename StorageTraits =
-        Storage::Bindings::ArrayList< std::allocator< Str >, 64u > >
-    requires Concepts::String< Str > && Concepts::StringView< Str, StrView >
+    typename UnderlyingTree,
+    typename StringStorageTraits =
+        Storage::Bindings::ArrayList< std::allocator< UnderlyingTree >, 64u > >
 class Tree
 {
 public:
-    using CharType = std::ranges::range_value_t< Str >;
-    using DiffType = std::ranges::range_difference_t< Str >;
-    using NodeType = Node< Str, StrView, NodeTraits >;
-    using NodeAllocator =
-        std::allocator_traits< typename StorageTraits::AllocatorType >::
-            template rebind_alloc< NodeType >;
-
-    using NodeStorage = Storage::Store< NodeType, StorageTraits >;
+    using NodeType = typename UnderlyingTree::NodeType;
+    using StringType = typename UnderlyingTree::StringType;
+    using StringViewType = typename UnderlyingTree::StringViewType;
+    using CharType = typename UnderlyingTree::CharType;
 
 private:
-    NodeStorage _storage;
-    NodeType _root;
+    using StringStorage = Storage::Store< StringType, StringStorageTraits >;
+
+private:
+    StringStorage _stringStorage;
+    UnderlyingTree _nakedTree;
 
 public:
-    template< typename... Args >
-    constexpr decltype(auto) addNode(
-        Meta::Access< Algorithm::MutatingTreeAlgorithm >,
-        Args&&... args) noexcept(noexcept(this->_storage
-                                              .emplace(
-                                                  std::declval< Args&& >()...)))
+    constexpr auto& mutableStringStorage(
+        Meta::Access< Algorithm::MutatingTreeAlgorithm > const&) noexcept
     {
-        return _storage.emplace(std::forward< Args >(args)...);
+        return _stringStorage;
     }
 
-    // TODO: Support actual removal
-    constexpr void removeNode(
-        Meta::Access< Algorithm::MutatingTreeAlgorithm >,
-        NodeType& node) = delete;
+    constexpr auto&
+    mutableRoot(Meta::Access< Algorithm::MutatingTreeAlgorithm > const&) noexcept(
+        noexcept(_nakedTree.mutableRoot()))
+    {
+        return _nakedTree.mutableRoot();
+    }
+
+    constexpr auto const& root() const noexcept(noexcept(_nakedTree.root()))
+    {
+        return _nakedTree.root();
+    }
+
+    constexpr auto
+    nodeFactory(Meta::Access< Algorithm::MutatingTreeAlgorithm > const&) noexcept(
+        noexcept(_nakedTree.nodeFactory()))
+    {
+        return _nakedTree.nodeFactory();
+    }
 };
 
 } // namespace Core
+
 } // namespace SuffixTree
 } // namespace Penjing

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -9,6 +9,9 @@
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
 #include "../../Concepts/Node.hpp"
 
+#include "Canonize.hpp"
+#include "TestAndSplit.hpp"
+
 namespace Penjing {
 namespace SuffixTree {
 namespace Builders {
@@ -16,16 +19,11 @@ namespace Ukkonen {
 
 namespace CPO {
 
-template< typename Canonizer, typename SmartSplitter >
-class Update
-    : private Algorithm::MutatingNodeAlgorithm
-    , private Canonizer
-    , private SmartSplitter
+template<
+    auto Canonizer = Cust::canonize,
+    auto TestAndSplitter = Cust::testAndSplit<> >
+class Update : public Algorithm::MutatingNodeAlgorithm
 {
-private:
-    using Canonizer::canonize;
-    using SmartSplitter::testAndSplit;
-
 public:
     template< typename Node, typename NodeFactory >
         requires(Concepts::Node< Node >)
@@ -52,7 +50,7 @@ public:
         auto const expansionChar = *expansionIt;
 
         std::tie(isEndPoint, currentRef) =
-            testAndSplit(node, expandingBranch, expansionChar, makeNode);
+            TestAndSplitter(node, expandingBranch, expansionChar, makeNode);
 
         while (!isEndPoint) {
             // currentRef points to the newly created branching state, ready to
@@ -84,7 +82,7 @@ public:
             // so testAndSplit will necessarily returns true and no node will
             // be created.
             // Proceed for the next expansion round...
-            std::tie(isEndPoint, currentRef) = testAndSplit(
+            std::tie(isEndPoint, currentRef) = TestAndSplitter(
                 currentNode.get(),
                 expandingBranch,
                 expansionChar,
@@ -124,8 +122,8 @@ private:
         auto link = node.suffixLink();
 
         advanceOnCanonize = !link && std::ranges::empty(wordPath);
-        auto result = (link) ? canonize((*link).get(), wordPath)
-                             : canonize(root, advanceStringView(wordPath));
+        auto result = (link) ? Canonizer((*link).get(), wordPath)
+                             : Canonizer(root, advanceStringView(wordPath));
 
         return std::make_tuple(
             std::ref(const_cast< Node& >(std::get< 0 >(result))),
@@ -137,32 +135,10 @@ private:
 
 inline namespace Cust {
 
-template< typename Canonizer, typename SmartSplitter >
-inline constexpr CPO::Update< Canonizer, SmartSplitter > update{};
+template< auto Canonizer = canonize, auto TestAndSplitter = testAndSplit<> >
+inline constexpr CPO::Update< Canonizer, TestAndSplitter > update{};
 
 } // namespace Cust
-
-template< typename Canonizer, typename SmartSplitter >
-class UpdatePolicy
-{
-public:
-    template< typename Node, typename StrView, typename NodeFactory >
-    constexpr auto update(
-        Node& root,
-        Node& node,
-        StrView&& wordPath,
-        std::ranges::range_difference_t< typename Node::StringViewType >
-            currentExpansion,
-        NodeFactory&& makeNode) const
-    {
-        return Cust::update< Canonizer, SmartSplitter >(
-            root,
-            node,
-            std::forward< StrView >(wordPath),
-            currentExpansion,
-            std::forward< NodeFactory >(makeNode));
-    }
-};
 
 } // namespace Ukkonen
 } // namespace Builders

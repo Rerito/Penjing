@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #include <gtest/gtest.h>
@@ -17,15 +17,11 @@ using namespace Penjing::SuffixTree::Test;
 
 using UkkonenUpdateFixture = BananaFixture;
 
-inline constexpr CPO::
-    Update< CanonizePolicy, TestAndSplitPolicy< SplitPolicy > >
-        testUpdate{};
-
 TEST_F(UkkonenUpdateFixture, Basic)
 {
     NodeFactory< NodeType > factory;
     std::string can_ = "can$";
-    auto result = testUpdate(_nodes.at(0), _nodes.at(0), can_, 0, factory);
+    auto result = update<>(_nodes.at(0), _nodes.at(0), can_, 0, factory);
 
     // We added the expansion for the first character in the new string "can$"
     // We should end up in root

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -86,7 +86,7 @@ public:
         while (!std::ranges::empty(queue)) {
             auto const& [n1, n2] = queue.front();
 
-            if(n1.childrenCount() != n2.childrenCount()) {
+            if (n1.childrenCount() != n2.childrenCount()) {
                 return false;
             }
 

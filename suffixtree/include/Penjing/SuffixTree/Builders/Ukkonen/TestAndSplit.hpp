@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -9,6 +9,8 @@
 #include "../../Concepts/Node.hpp"
 #include "../../Core/UnsafeTag.hpp"
 
+#include "Split.hpp"
+
 namespace Penjing {
 namespace SuffixTree {
 namespace Builders {
@@ -16,14 +18,9 @@ namespace Ukkonen {
 
 namespace CPO {
 
-template< typename Splitter >
-class TestAndSplit
-    : private Algorithm::MutatingNodeAlgorithm
-    , private Splitter
+template< auto Splitter = Cust::split >
+class TestAndSplit : public Algorithm::MutatingNodeAlgorithm
 {
-private:
-    using Splitter::split;
-
 public:
     template< typename Node, typename NodeFactory >
         requires(Concepts::Node< Node >)
@@ -51,7 +48,7 @@ public:
 
         // Now a new node must be created to make the implicit state explicit
         // and allow branching from it.
-        auto& newNode = split(
+        auto& newNode = Splitter(
             node,
             t,
             std::ranges::size(wordPath),
@@ -65,28 +62,10 @@ public:
 
 inline namespace Cust {
 
-template< typename Splitter >
+template< auto Splitter = split >
 inline constexpr CPO::TestAndSplit< Splitter > testAndSplit{};
 
 } // namespace Cust
-
-template< typename Splitter >
-struct TestAndSplitPolicy
-{
-    template< typename Node, typename NodeFactory >
-    constexpr auto testAndSplit(
-        Node& node,
-        typename Node::StringViewType const& wordPath,
-        typename Node::CharType expansion,
-        NodeFactory&& makeNode) const
-    {
-        return Cust::testAndSplit< Splitter >(
-            node,
-            wordPath,
-            expansion,
-            std::forward< NodeFactory >(makeNode));
-    }
-};
 
 } // namespace Ukkonen
 } // namespace Builders
