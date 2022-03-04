@@ -38,7 +38,7 @@ public:
     constexpr auto operator()(Node const& root, StrView word) const
     {
         auto matchingNode = std::cref(root);
-        std::ranges::range_difference_t< StrView > matchingSize = 0;
+        std::ranges::range_size_t< StrView > matchingSize = 0;
 
         while (!std::ranges::empty(word)) {
             auto const transition =

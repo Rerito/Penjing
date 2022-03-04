@@ -44,8 +44,8 @@ private:
 
 public:
     using ArrayType = std::array< ValueType, ArraySize >;
-    using ArrayAlloc =
-        std::allocator_traits< Alloc >::template rebind_alloc< ArrayType >;
+    using ArrayAlloc = typename std::allocator_traits< Alloc >
+        ::template rebind_alloc< ArrayType >;
     using StorageType = std::list< ArrayType, ArrayAlloc >;
 
 private:

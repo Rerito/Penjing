@@ -36,7 +36,6 @@ public:
         noexcept(_isNoExcept< Node, NodeFactory&& >())
     {
         using StrView = typename Node::StringViewType;
-        using DiffType = std::ranges::range_difference_t< StrView >;
 
         auto [initialActiveNode, toInsert, currentExpansion] =
             fetchActivePoint(root, word);

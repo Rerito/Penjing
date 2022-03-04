@@ -46,7 +46,7 @@ public:
     constexpr auto& operator()(
         Node& node,
         typename Node::TransitionType& branch,
-        std::ranges::range_difference_t< typename Node::StringViewType >
+        std::ranges::range_size_t< typename Node::StringViewType >
             branchingPoint,
         NodeFactory&& factory) const
         noexcept(_isNoExcept< Node, NodeFactory >())

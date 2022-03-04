@@ -118,7 +118,6 @@ private:
         typename Node::StringViewType wordPath,
         bool& advanceOnCanonize) const
     {
-        using StrView = typename Node::StringViewType;
         auto link = node.suffixLink();
 
         advanceOnCanonize = !link && std::ranges::empty(wordPath);
