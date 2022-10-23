@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -7,7 +7,6 @@
 #include <list>
 #include <memory>
 #include <optional>
-#include <ranges>
 #include <type_traits>
 #include <variant>
 

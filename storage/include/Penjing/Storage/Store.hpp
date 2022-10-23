@@ -1,16 +1,14 @@
-// Copyright (c) 2021, Rerito
+// Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
 #pragma once
 
 #include <cassert>
 #include <memory>
-#include <ranges>
 #include <type_traits>
 
 #include <Penjing/Meta/IsDetected.hpp>
 #include <Penjing/Meta/SelfVariant.hpp>
-#include <Penjing/Meta/VariantHelpers.hpp>
 
 namespace Penjing {
 namespace Storage {
@@ -43,8 +41,6 @@ struct Element
 };
 
 template< typename Value >
-    requires Meta::NoStorageOffsetVariant<
-        Meta::SelfVariant< std::monostate, Value* > >
 struct Element< Value, false >
 {
     using Type = Meta::SelfVariant< std::monostate, Value >;
