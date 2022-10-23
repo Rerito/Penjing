@@ -21,13 +21,13 @@ template< typename T >
 using SecondType = decltype(std::declval< T >().second);
 
 template< typename T >
-concept HasSecond = Detected< SecondType, T >;
+constexpr bool HasSecond = Detected< SecondType, T >;
 
 template< typename M, typename K >
 using FindReturnType = decltype(std::declval< M >().find(std::declval< K >()));
 
 template< typename M, typename K >
-concept HasFind = Detected< FindReturnType, M, K >;
+constexpr bool HasFind = Detected< FindReturnType, M, K >;
 
 struct Throw
 {
@@ -82,9 +82,10 @@ struct MappedAt : private OnFailedAccess
     template< typename Range, typename Key >
     constexpr auto operator()(Range& range, Key&& key) const noexcept(
         noexcept(std::forward< Range >(range).find(std::forward< Key >(key))))
-        -> typename OnFailedAccess::template MappedType< decltype((
-            std::declval< std::iter_reference_t< IteratorType< Range& > > >()
-                .second)) >
+        -> typename OnFailedAccess::template MappedType<
+            decltype((std::declval< typename std::iterator_traits<
+                          IteratorType< Range& > >::reference >()
+                          .second)) >
     {
         static_assert(
             Details::HasFind< Range&, Key&& > &&
@@ -92,9 +93,10 @@ struct MappedAt : private OnFailedAccess
 
         using std::end;
 
-        using ElementRef = decltype((
-            std::declval< std::iter_reference_t< IteratorType< Range& > > >()
-                .second));
+        using ElementRef =
+            decltype((std::declval< typename std::iterator_traits<
+                          IteratorType< Range& > >::reference >()
+                          .second));
         auto it = range.find(std::forward< Key >(key));
 
         if (end(range) == it) {

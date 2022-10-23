@@ -16,13 +16,14 @@ private:
     template< typename Tree, typename... Args >
     constexpr auto viewToInsert(Tree& tree, Args&&... args) const
     {
+        using std::addressof;
         using std::begin;
-        using std::end;
+        using std::size;
         using StrView = typename Tree::StringViewType;
         auto const& newString =
             mutableStringStorage(tree).emplace(std::forward< Args >(args)...);
 
-        return StrView{begin(newString), end(newString)};
+        return StrView{addressof(*begin(newString)), size(newString)};
     }
 
     template< typename Tree >

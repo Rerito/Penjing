@@ -27,7 +27,7 @@ private:
             dump(
                 *(t.second),
                 ostream,
-                offset + 8 + std::ranges::size(t.second.label()));
+                offset + 8 + std::size(t.second.label()));
         }
     }
 

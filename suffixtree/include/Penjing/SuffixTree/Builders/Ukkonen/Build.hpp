@@ -18,7 +18,7 @@ namespace Ukkonen {
 
 namespace CPO {
 
-template< auto Canonize = Cust::canonize, auto Update = Cust::update<> >
+template< typename Canonize = Canonize, typename Update = Update<> >
 class Build : public Algorithm::MutatingNodeAlgorithm
 {
 private:
@@ -37,9 +37,10 @@ public:
         NodeFactory&& makeNode) const
         noexcept(_isNoExcept< Node, NodeFactory&& >())
     {
+        using std::addressof;
         using std::begin;
+        using std::distance;
         using std::end;
-
         using std::size;
 
         using StrView = typename Node::StringViewType;
@@ -55,7 +56,7 @@ public:
 
             // label is the proper view on the string for the next insertion
             // However it still needs to be canonized
-            std::tie(activeNode, label) = Update(
+            std::tie(activeNode, label) = Update{}(
                 root,
                 activeNode.get(),
                 toInsert,
@@ -63,14 +64,17 @@ public:
                 makeNode);
 
             auto [canonizedActiveNode, canonizedLabel] =
-                Canonize(activeNode.get(), label);
+                Canonize{}(activeNode.get(), label);
             label = std::move(canonizedLabel);
 
             // To be able to properly perform the next insertion, we have to
             // suffix the label view with the remainder of the toInsert view.
             // This is possible because the implementation guarantees that label
             // and toInsert are contiguous views over the same string.
-            toInsert = {begin(label), end(toInsert)};
+            toInsert = StrView{
+                addressof(*begin(label)),
+                static_cast< std::size_t >(
+                    distance(begin(label), end(toInsert)))};
 
             // The current expansion for the next update call is marked by the
             // end of the label view.
@@ -99,7 +103,7 @@ private:
 
 inline namespace Cust {
 
-template< auto Canonize = canonize, auto Update = update<> >
+template< typename Canonize = CPO::Canonize, typename Update = CPO::Update<> >
 inline constexpr CPO::Build< Canonize, Update > build{};
 
 } // namespace Cust

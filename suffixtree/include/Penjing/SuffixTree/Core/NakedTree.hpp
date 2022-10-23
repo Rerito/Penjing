@@ -43,9 +43,9 @@ public:
     using CharType = Meta::ValueType< Str >;
     using DiffType = Meta::DifferenceType< Str >;
     using NodeType = Node< Str, StrView, NodeTraits >;
-    using NodeAllocator =
-        std::allocator_traits< typename StorageTraits::AllocatorType >::
-            template rebind_alloc< NodeType >;
+    using NodeAllocator = typename std::allocator_traits<
+        typename StorageTraits::AllocatorType >::
+        template rebind_alloc< NodeType >;
 
     using NodeStorage = Storage::Store< NodeType, StorageTraits >;
 

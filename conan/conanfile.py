@@ -29,7 +29,7 @@ class Penjing(ConanFile):
 
     def validate(self):
         if self.settings.compiler.get_safe("cppstd"):
-            tools.check_min_cppstd(self,"20")
+            tools.check_min_cppstd(self,"17")
 
         compiler_version = tools.Version(self.settings.compiler.version)
         if self.settings.compiler == "gcc":

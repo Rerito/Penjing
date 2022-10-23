@@ -15,7 +15,7 @@ namespace Ukkonen {
 
 namespace CPO {
 
-template< auto Splitter = Cust::split >
+template< typename Splitter = Split >
 class TestAndSplit : public Algorithm::MutatingNodeAlgorithm
 {
 public:
@@ -48,7 +48,7 @@ public:
 
         // Now a new node must be created to make the implicit state explicit
         // and allow branching from it.
-        auto& newNode = Splitter(
+        auto& newNode = Splitter{}(
             node,
             t,
             size(wordPath),
@@ -62,7 +62,7 @@ public:
 
 inline namespace Cust {
 
-template< auto Splitter = split >
+template< typename Splitter = CPO::Split >
 inline constexpr CPO::TestAndSplit< Splitter > testAndSplit{};
 
 } // namespace Cust

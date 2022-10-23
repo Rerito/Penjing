@@ -14,7 +14,7 @@ using WalkFixture = BananaFixture;
 
 TEST_F(WalkFixture, Walk)
 {
-    std::string_view anan = {std::begin(_banana) + 1, std::begin(_banana) + 5};
+    std::string_view anan = std::string_view{&_banana[0] + 1, 4};
 
     auto [node, word, mismatchIdx] = Algorithm::walk(n_root, anan);
 

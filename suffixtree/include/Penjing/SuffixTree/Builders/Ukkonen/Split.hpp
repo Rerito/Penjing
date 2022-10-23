@@ -65,12 +65,15 @@ public:
         // Add the transition to the new node
         addTransition(
             newNode,
-            StrView{begin(label) + branchingPoint, end(label)},
+            StrView{
+                addressof(*begin(label)) + branchingPoint,
+                size(label) - branchingPoint},
             target);
 
         // Now edit the existing transition so that it points to the new node
         // with a trimmed label.
-        label = {begin(label), begin(label) + branchingPoint};
+        label =
+            StrView{addressof(*begin(label)), static_cast< std::size_t >(branchingPoint)};
         target = addressof(newNode);
 
         return newNode;

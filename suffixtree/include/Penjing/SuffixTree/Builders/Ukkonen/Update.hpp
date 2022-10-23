@@ -20,8 +20,8 @@ namespace Ukkonen {
 namespace CPO {
 
 template<
-    auto Canonizer = Cust::canonize,
-    auto TestAndSplitter = Cust::testAndSplit<> >
+    typename Canonizer = Canonize,
+    typename TestAndSplitter = TestAndSplit<> >
 class Update : public Algorithm::MutatingNodeAlgorithm
 {
 public:
@@ -33,7 +33,9 @@ public:
         Meta::DifferenceType< typename Node::StringViewType > currentExpansion,
         NodeFactory&& makeNode) const
     {
+        using std::addressof;
         using std::begin;
+        using std::distance;
         using std::end;
 
         using StrView = typename Node::StringViewType;
@@ -45,12 +47,14 @@ public:
         bool isEndPoint = true;
 
         auto expansionIt = (begin(wordPath) + currentExpansion);
-        StrView expandingBranch{begin(wordPath), expansionIt};
+        StrView expandingBranch{
+            addressof(*begin(wordPath)),
+            static_cast< std::size_t >(currentExpansion)};
 
         auto const expansionChar = *expansionIt;
 
         std::tie(isEndPoint, currentRef) =
-            TestAndSplitter(node, expandingBranch, expansionChar, makeNode);
+            TestAndSplitter{}(node, expandingBranch, expansionChar, makeNode);
 
         while (!isEndPoint) {
             // currentRef points to the newly created branching state, ready to
@@ -60,7 +64,10 @@ public:
             // Add that new branch to currentRef.
             addTransition(
                 currentRef.get(),
-                StrView{expansionIt, end(wordPath)},
+                StrView{
+                    addressof(*expansionIt),
+                    static_cast< std::size_t >(
+                        distance(expansionIt, end(wordPath)))},
                 std::addressof(newState));
 
             // Update the suffix link of the previous expansion reference node.
@@ -82,7 +89,7 @@ public:
             // so testAndSplit will necessarily returns true and no node will
             // be created.
             // Proceed for the next expansion round...
-            std::tie(isEndPoint, currentRef) = TestAndSplitter(
+            std::tie(isEndPoint, currentRef) = TestAndSplitter{}(
                 currentNode.get(),
                 expandingBranch,
                 expansionChar,
@@ -93,24 +100,23 @@ public:
             setLink(oldRef.get(), std::addressof(currentRef.get()));
         }
 
-        return std::make_tuple(
-            currentNode,
-            StrView{
-                begin(expandingBranch) + advanceOnCanonize,
-                expansionIt + 1});
+        auto beg = begin(expandingBranch) + advanceOnCanonize;
+        auto dist = static_cast< std::size_t >(distance(beg, expansionIt + 1));
+        return std::make_tuple(currentNode, StrView{addressof(*beg), dist});
     }
 
 private:
     template< typename StrView >
     constexpr StrView& advanceStringView(StrView& view) const noexcept
     {
+        using std::addressof;
         using std::begin;
-        using std::end;
+        using std::size;
 
         using std::empty;
 
         if (!empty(view)) {
-            view = {begin(view) + 1, end(view)};
+            view = StrView{addressof(*begin(view)) + 1, size(view) - 1};
         }
 
         return view;
@@ -129,8 +135,8 @@ private:
         auto link = node.suffixLink();
 
         advanceOnCanonize = !link && empty(wordPath);
-        auto result = (link) ? Canonizer((*link).get(), wordPath)
-                             : Canonizer(root, advanceStringView(wordPath));
+        auto result = (link) ? Canonizer{}((*link).get(), wordPath)
+                             : Canonizer{}(root, advanceStringView(wordPath));
 
         return std::make_tuple(
             std::ref(const_cast< Node& >(std::get< 0 >(result))),
@@ -142,7 +148,9 @@ private:
 
 inline namespace Cust {
 
-template< auto Canonizer = canonize, auto TestAndSplitter = testAndSplit<> >
+template<
+    typename Canonizer = CPO::Canonize,
+    typename TestAndSplitter = CPO::TestAndSplit<> >
 inline constexpr CPO::Update< Canonizer, TestAndSplitter > update{};
 
 } // namespace Cust

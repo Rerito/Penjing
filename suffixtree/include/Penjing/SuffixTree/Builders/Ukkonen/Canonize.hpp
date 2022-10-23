@@ -24,10 +24,10 @@ public:
     template< typename Node, typename StrView >
     constexpr auto operator()(Node const& node, StrView wordPath) const
     {
+        using std::addressof;
         using std::begin;
-        using std::end;
-
         using std::empty;
+        using std::end;
         using std::size;
 
         auto canonicalNode = std::cref(node);
@@ -50,9 +50,10 @@ public:
 
             // Skim wordPath at the beginning of size(label) characters to
             // prepare for the next iteration
-            wordPath = {
-                begin(wordPath) + size((*t).get().label()),
-                end(wordPath)};
+            auto advancingOf = size((*t).get().label());
+            wordPath = StrView{
+                addressof(*begin(wordPath)) + advancingOf,
+                size(wordPath) - advancingOf};
 
             canonicalNode = std::cref(*((*t).get()));
 

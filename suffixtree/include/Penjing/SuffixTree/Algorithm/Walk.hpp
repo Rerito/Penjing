@@ -31,7 +31,9 @@ public:
     template< typename Node, typename StrView >
     constexpr auto operator()(Node const& root, StrView word) const
     {
+        using std::addressof;
         using std::begin;
+        using std::distance;
         using std::empty;
         using std::end;
         using std::mismatch;
@@ -68,7 +70,9 @@ public:
                 break;
             }
 
-            word = StrView(mismatched.second, end(word));
+            word = StrView(
+                addressof(*mismatched.second),
+                distance(mismatched.second, end(word)));
 
             // Otherwise the target of the matching transition becomes the basis
             // for the walk.
