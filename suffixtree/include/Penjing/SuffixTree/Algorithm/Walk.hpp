@@ -11,9 +11,6 @@
 #include <Penjing/Meta/DifferenceType.hpp>
 #include <Penjing/Meta/ValueType.hpp>
 
-#include "../Concepts/Node.hpp"
-#include "../Concepts/StringView.hpp"
-
 namespace Penjing {
 namespace SuffixTree {
 namespace Algorithm {
@@ -32,11 +29,6 @@ private:
 
 public:
     template< typename Node, typename StrView >
-        requires Concepts::Node< Node > &&
-            Concepts::StringView< typename Node::StringType, StrView > &&
-            std::convertible_to<
-                typename Node::CharType,
-                Meta::ValueType< StrView > >
     constexpr auto operator()(Node const& root, StrView word) const
     {
         using std::begin;

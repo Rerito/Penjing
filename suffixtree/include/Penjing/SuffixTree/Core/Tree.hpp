@@ -8,8 +8,6 @@
 #include <Penjing/Storage/Bindings/ArrayList.hpp>
 #include <Penjing/Storage/Store.hpp>
 
-#include "../Concepts/HasStringStorage.hpp"
-
 namespace Penjing {
 namespace SuffixTree {
 

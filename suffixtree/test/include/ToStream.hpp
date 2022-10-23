@@ -7,8 +7,6 @@
 
 #include <Penjing/Meta/MakeIteratorRange.hpp>
 
-#include <Penjing/SuffixTree/Concepts/Node.hpp>
-
 namespace Penjing {
 namespace SuffixTree {
 namespace Test {

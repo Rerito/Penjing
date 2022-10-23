@@ -5,8 +5,6 @@
 
 #include "../Algorithm/MutatingTreeAlgorithm.hpp"
 
-#include "../Concepts/HasStringStorage.hpp"
-
 namespace Penjing {
 namespace SuffixTree {
 
@@ -16,7 +14,6 @@ class TreeBuild : public Algorithm::MutatingTreeAlgorithm
 {
 private:
     template< typename Tree, typename... Args >
-        requires(Concepts::HasStringStorage< Tree >)
     constexpr auto viewToInsert(Tree& tree, Args&&... args) const
     {
         using std::begin;

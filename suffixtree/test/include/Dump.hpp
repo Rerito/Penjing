@@ -8,8 +8,6 @@
 
 #include <Penjing/Meta/MakeIteratorRange.hpp>
 
-#include <Penjing/SuffixTree/Concepts/Node.hpp>
-
 namespace Penjing {
 namespace SuffixTree {
 namespace Test {
@@ -18,7 +16,6 @@ class Dump
 {
 private:
     template< typename Node >
-        requires(Concepts::Node< Node >)
     constexpr void dump(Node const& node, std::ostream& ostream, size_t offset)
         const
     {

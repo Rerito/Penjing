@@ -114,63 +114,59 @@ private:
 
 public:
     template< typename... Args >
-        requires(_canEmplace< Args... >() && _hasNativeRemoval())
-    Value& emplace(Args&&... args) noexcept(_hasNoExceptEmplace< Args&&... >())
+    Value& emplace(Args&&... args) noexcept(
+        _hasNativeRemoval() ? _hasNoExceptEmplace< Args&&... >()
+                            : _hasNoExceptEmplace< Value&& >())
     {
-        auto& value =
-            StorageTraits::emplace(_storage, std::forward< Args >(args)...);
-        ++_activeCount;
+        if constexpr (_hasNativeRemoval()) {
+            auto& value =
+                StorageTraits::emplace(_storage, std::forward< Args >(args)...);
+            ++_activeCount;
 
-        return value;
-    }
-
-    template< typename... Args >
-        requires(_canEmplace< Value&& >())
-    Value& emplace(Args&&... args) noexcept(_hasNoExceptEmplace< Value&& >())
-    {
-        Element* valueVariant = nullptr;
-        if (nullptr != _free) {
-            valueVariant = _free;
-            auto value = Value{std::forward< Args >(args)...};
-
-            // Cannot throw as the _free pointer points to a recycled value.
-            _free = std::get< Element* >(*valueVariant);
-
-            *valueVariant = std::move(value);
-            --_freeCount;
+            return value;
         } else {
-            valueVariant = std::addressof(StorageTraits::emplace(
-                _storage,
-                Value{std::forward< Args >(args)...}));
+            Element* valueVariant = nullptr;
+            if (nullptr != _free) {
+                valueVariant = _free;
+                auto value = Value{std::forward< Args >(args)...};
+
+                // Cannot throw as the _free pointer points to a recycled value.
+                _free = std::get< Element* >(*valueVariant);
+
+                *valueVariant = std::move(value);
+                --_freeCount;
+            } else {
+                valueVariant = std::addressof(StorageTraits::emplace(
+                    _storage,
+                    Value{std::forward< Args >(args)...}));
+            }
+
+            ++_activeCount;
+
+            assert(nullptr != valueVariant);
+            // This cannot throw as the variant is currently storing the value.
+            return std::get< Value >(*valueVariant);
         }
-
-        ++_activeCount;
-
-        assert(nullptr != valueVariant);
-        // This cannot throw as the variant is currently storing the value.
-        return std::get< Value >(*valueVariant);
-    }
-
-    void remove(Value&& value) noexcept(_hasNoExceptRemoval()) requires(
-        _hasNativeRemoval())
-    {
-        // The move is used to signal the caller that the object should not be
-        // used after the remove.
-        StorageTraits::remove(_storage, std::move(value));
-        --_activeCount;
     }
 
     void remove(Value&& value) noexcept(_hasNoExceptRemoval())
     {
-        // 1. From the value's reference, deduce the containing variant.
-        auto& asVariant = *static_cast< Element* >(
-            static_cast< void* >(std::addressof(value)));
+        if constexpr (_hasNativeRemoval()) {
+            // The move is used to signal the caller that the object should not
+            // be used after the remove.
+            StorageTraits::remove(_storage, std::move(value));
+            --_activeCount;
+        } else {
+            // 1. From the value's reference, deduce the containing variant.
+            auto& asVariant = *static_cast< Element* >(
+                static_cast< void* >(std::addressof(value)));
 
-        // 2. Destroy the value object and update the freelist.
-        asVariant = _free;
-        _free = std::addressof(asVariant);
-        ++_freeCount;
-        --_activeCount;
+            // 2. Destroy the value object and update the freelist.
+            asVariant = _free;
+            _free = std::addressof(asVariant);
+            ++_freeCount;
+            --_activeCount;
+        }
     }
 };
 

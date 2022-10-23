@@ -12,9 +12,6 @@
 #include <Penjing/Storage/Bindings/StdUnorderedMap.hpp>
 #include <Penjing/Storage/Store.hpp>
 
-#include "../Concepts/String.hpp"
-#include "../Concepts/StringView.hpp"
-
 #include "Node.hpp"
 
 namespace Penjing {
@@ -38,7 +35,6 @@ template<
         Storage::Bindings::StdUnorderedMap< std::allocator< Str > >,
     typename StorageTraits =
         Storage::Bindings::ArrayList< std::allocator< Str >, 64u > >
-    requires Concepts::String< Str > && Concepts::StringView< Str, StrView >
 class NakedTree
 {
 public:

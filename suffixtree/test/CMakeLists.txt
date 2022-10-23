@@ -7,7 +7,6 @@ add_executable(
     src/Algorithm/Walk.cpp
     src/BananaFixture.cpp
     src/main.cpp
-    src/Concepts.cpp
     src/SuffixTree.cpp
     src/Ukkonen/Build.cpp
     src/Ukkonen/Canonize.cpp

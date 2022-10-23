@@ -32,8 +32,7 @@ concept HasFind = Detected< FindReturnType, M, K >;
 struct Throw
 {
     template< typename T >
-        requires std::is_reference_v< T >
-    using MappedType = T;
+    using MappedType = std::enable_if_t< std::is_reference_v< T >, T >;
 
     template< typename T >
     [[noreturn]] constexpr MappedType< T > failedAccess() const
@@ -45,8 +44,9 @@ struct Throw
 struct EmptyOptional
 {
     template< typename T >
-        requires std::is_reference_v< T >
-    using MappedType = std::optional< ToReferenceWrapper< T > >;
+    using MappedType = std::enable_if_t<
+        std::is_reference_v< T >,
+        std::optional< ToReferenceWrapper< T > > >;
 
     template< typename T >
     constexpr MappedType< T > failedAccess() const noexcept
@@ -80,14 +80,16 @@ struct MappedAt : private OnFailedAccess
      *         element or an empty optional if there is no such element.
      */
     template< typename Range, typename Key >
-        requires Details::HasFind< Range&, Key&& > &&
-            Details::HasSecond< ValueType< Range > >
     constexpr auto operator()(Range& range, Key&& key) const noexcept(
         noexcept(std::forward< Range >(range).find(std::forward< Key >(key))))
         -> typename OnFailedAccess::template MappedType< decltype((
             std::declval< std::iter_reference_t< IteratorType< Range& > > >()
                 .second)) >
     {
+        static_assert(
+            Details::HasFind< Range&, Key&& > &&
+            Details::HasSecond< ValueType< Range > >);
+
         using std::end;
 
         using ElementRef = decltype((

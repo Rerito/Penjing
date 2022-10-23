@@ -9,8 +9,6 @@
 
 #include <Penjing/Meta/MakeIteratorRange.hpp>
 
-#include "../Concepts/Node.hpp"
-
 namespace Penjing {
 namespace SuffixTree {
 namespace Algorithm {
@@ -64,16 +62,6 @@ private:
 
 public:
     template< typename Node1, typename Node2, typename Compare >
-        requires(Concepts::Node< Node1 >&& Concepts::Node< Node2 >&&
-                     std::convertible_to<
-                         typename Node1::CharType,
-                         typename Node2::CharType >&&
-                         std::convertible_to<
-                             std::invoke_result_t<
-                                 Compare&&,
-                                 typename Node1::CharType,
-                                 typename Node2::CharType >,
-                             bool >)
     constexpr bool
     operator()(Node1 const& lhs, Node2 const& rhs, Compare&& compare) const
         noexcept(_isNoExcept< Node1, Node2, Compare& >())

@@ -8,7 +8,6 @@
 #include <Penjing/Meta/DifferenceType.hpp>
 
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
-#include "../../Concepts/Node.hpp"
 
 #include "Canonize.hpp"
 #include "TestAndSplit.hpp"
@@ -27,7 +26,6 @@ class Update : public Algorithm::MutatingNodeAlgorithm
 {
 public:
     template< typename Node, typename NodeFactory >
-        requires(Concepts::Node< Node >)
     constexpr auto operator()(
         Node& root,
         Node& node,

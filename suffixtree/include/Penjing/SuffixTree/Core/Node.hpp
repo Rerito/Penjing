@@ -12,9 +12,6 @@
 #include <Penjing/Meta/Memory.hpp>
 #include <Penjing/Meta/ValueType.hpp>
 
-#include "../Concepts/String.hpp"
-#include "../Concepts/StringView.hpp"
-
 #include "Transition.hpp"
 #include "UnsafeTag.hpp"
 
@@ -30,7 +27,6 @@ class MutatingNodeAlgorithm;
 namespace Core {
 
 template< typename Str, typename StrView, typename NodeTraits >
-    requires Concepts::String< Str > && Concepts::StringView< Str, StrView >
 class Node
 {
 public:

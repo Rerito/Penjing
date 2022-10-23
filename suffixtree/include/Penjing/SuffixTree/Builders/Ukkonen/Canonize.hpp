@@ -7,9 +7,6 @@
 #include <functional>
 #include <tuple>
 
-#include "../../Concepts/Node.hpp"
-#include "../../Concepts/StringView.hpp"
-
 namespace Penjing {
 namespace SuffixTree {
 namespace Builders {
@@ -25,8 +22,6 @@ public:
     // being added. The canonical path is sure to exist thanks to
     // "open transitions" left during the tree construction.
     template< typename Node, typename StrView >
-        requires(Concepts::Node< Node >&&
-                     Concepts::StringView< typename Node::StringType, StrView >)
     constexpr auto operator()(Node const& node, StrView wordPath) const
     {
         using std::begin;

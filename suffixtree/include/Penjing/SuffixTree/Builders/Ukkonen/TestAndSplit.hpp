@@ -4,7 +4,6 @@
 #pragma once
 
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
-#include "../../Concepts/Node.hpp"
 #include "../../Core/UnsafeTag.hpp"
 
 #include "Split.hpp"
@@ -21,7 +20,6 @@ class TestAndSplit : public Algorithm::MutatingNodeAlgorithm
 {
 public:
     template< typename Node, typename NodeFactory >
-        requires(Concepts::Node< Node >)
     constexpr auto operator()(
         Node& node,
         typename Node::StringViewType const& wordPath,

@@ -6,14 +6,11 @@
 #include <memory>
 #include <vector>
 
-#include <Penjing/SuffixTree/Concepts/Node.hpp>
-
 namespace Penjing {
 namespace SuffixTree {
 namespace Test {
 
 template< typename Node >
-    requires Concepts::Node< Node >
 class NodeFactory
 {
 public:

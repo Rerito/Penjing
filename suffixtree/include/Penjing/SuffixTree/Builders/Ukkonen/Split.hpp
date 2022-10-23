@@ -10,8 +10,6 @@
 
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
 
-#include "../../Concepts/Node.hpp"
-
 namespace Penjing {
 namespace SuffixTree {
 namespace Builders {
@@ -43,7 +41,6 @@ public:
     // following tree structure is implemented:
     // N -- (t[0..k-1]) --> N' -- (t[k..M]) --> N2
     template< typename Node, typename NodeFactory >
-        requires(Concepts::Node< Node >)
     constexpr auto& operator()(
         Node& node,
         typename Node::TransitionType& branch,
