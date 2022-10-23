@@ -5,11 +5,12 @@
 
 #include <functional>
 #include <optional>
-#include <ranges>
 #include <type_traits>
 
 #include "../IsDetected.hpp"
+#include "../IteratorType.hpp"
 #include "../ToReferenceWrapper.hpp"
+#include "../ValueType.hpp"
 
 namespace Penjing {
 namespace Meta {
@@ -48,39 +49,15 @@ struct EmptyOptional
     using MappedType = std::optional< ToReferenceWrapper< T > >;
 
     template< typename T >
-    constexpr MappedType< T > failedAccess() const noexcept { return {}; }
+    constexpr MappedType< T > failedAccess() const noexcept
+    {
+        return {};
+    }
 };
 
 } // namespace Details
 
 namespace CustomizationPoints {
-
-/*!
- * \brief Customization point object that offers view on the mapped values of
- *        a map-like range.
- */
-struct Mapped
-{
-    /*!
-     * \brief Retrieve a view to the mapped elements of the given range.
-     *
-     * \details The given range must fulfill the borrowed_range concept and its
-     *          value type should have an available `second` data member.
-     *
-     * \param range The range to view.
-     */
-    template< typename Range >
-        requires std::ranges::borrowed_range< Range& > &&
-            Details::HasSecond< std::ranges::range_value_t< Range > >
-    constexpr auto operator()(Range& range) const noexcept
-    {
-        return std::ranges::views::transform(
-            range,
-            [](auto& mappedElement) noexcept {
-                return std::ref(mappedElement.second);
-            });
-    }
-};
 
 /*!
  * \brief Customization point object to access the requested mapped item.
@@ -103,20 +80,22 @@ struct MappedAt : private OnFailedAccess
      *         element or an empty optional if there is no such element.
      */
     template< typename Range, typename Key >
-        requires std::ranges::borrowed_range< Range& > &&
-            Details::HasFind< Range&, Key&& > &&
-            Details::HasSecond< std::ranges::range_value_t< Range > >
+        requires Details::HasFind< Range&, Key&& > &&
+            Details::HasSecond< ValueType< Range > >
     constexpr auto operator()(Range& range, Key&& key) const noexcept(
         noexcept(std::forward< Range >(range).find(std::forward< Key >(key))))
-        -> typename OnFailedAccess::template MappedType<
-            decltype((std::declval< std::ranges::range_reference_t< Range& > >()
-                          .second)) >
+        -> typename OnFailedAccess::template MappedType< decltype((
+            std::declval< std::iter_reference_t< IteratorType< Range& > > >()
+                .second)) >
     {
+        using std::end;
+
         using ElementRef = decltype((
-            std::declval< std::ranges::range_reference_t< Range& > >().second));
+            std::declval< std::iter_reference_t< IteratorType< Range& > > >()
+                .second));
         auto it = range.find(std::forward< Key >(key));
 
-        if (std::ranges::end(range) == it) {
+        if (end(range) == it) {
             return OnFailedAccess::template failedAccess< ElementRef >();
         }
 
@@ -128,7 +107,6 @@ struct MappedAt : private OnFailedAccess
 
 inline namespace Cust {
 
-inline constexpr CustomizationPoints::Mapped mapped{};
 inline constexpr CustomizationPoints::MappedAt< Details::EmptyOptional >
     mappedAt{};
 inline constexpr CustomizationPoints::MappedAt< Details::Throw >

@@ -30,15 +30,3 @@ TEST(CustomizationPoints, unsafeMappedAt)
 
     ASSERT_THROW(Penjing::Meta::unsafeMappedAt(m, 2), std::invalid_argument);
 }
-
-TEST(CustomizationPoints, mapped)
-{
-    std::map< int, int > m{{1, 2}, {3, 4}, {5, 6}};
-
-    std::vector< int > values{2, 4, 6};
-    std::vector< int > result;
-
-    std::ranges::copy(Penjing::Meta::mapped(m), std::back_inserter(result));
-
-    ASSERT_EQ(values, result);
-}
