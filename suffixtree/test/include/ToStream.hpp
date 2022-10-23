@@ -5,6 +5,8 @@
 
 #include <queue>
 
+#include <Penjing/Meta/MakeIteratorRange.hpp>
+
 #include <Penjing/SuffixTree/Concepts/Node.hpp>
 
 namespace Penjing {
@@ -26,9 +28,9 @@ public:
             toVisit.pop();
 
             auto transitions = currentNode.transitions();
-            for (auto t : transitions) {
-                ostream << "[" << t.get().label() << "]";
-                toVisit.emplace(std::cref(*t.get().target()));
+            for (auto const& t : Meta::makeIteratorRange(transitions)) {
+                ostream << "[" << t.second.label() << "]";
+                toVisit.emplace(std::cref(*t.second.target()));
             }
         }
     }

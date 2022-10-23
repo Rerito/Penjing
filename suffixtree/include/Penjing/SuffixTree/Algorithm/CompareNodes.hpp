@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <functional>
 #include <queue>
-#include <ranges>
+
+#include <Penjing/Meta/MakeIteratorRange.hpp>
 
 #include "../Concepts/Node.hpp"
 
@@ -77,13 +78,20 @@ public:
     operator()(Node1 const& lhs, Node2 const& rhs, Compare&& compare) const
         noexcept(_isNoExcept< Node1, Node2, Compare& >())
     {
+        using std::begin;
+        using std::end;
+
+        using std::empty;
+        using std::mismatch;
+        using std::size;
+
         using NodeQueue = typename QueueTraits::template Type<
             std::pair< Node1 const&, Node2 const& > >;
 
         NodeQueue queue;
         queue.emplace(std::make_pair(std::cref(lhs), std::cref(rhs)));
 
-        while (!std::ranges::empty(queue)) {
+        while (!empty(queue)) {
             auto const& [n1, n2] = queue.front();
 
             if (n1.childrenCount() != n2.childrenCount()) {
@@ -92,9 +100,9 @@ public:
 
             auto n1Transitions = n1.transitions();
 
-            for (auto const& t1 : n1Transitions) {
-                auto const& t1Label = t1.get().label();
-                auto t2 = n2.transition(*std::ranges::begin(t1Label));
+            for (auto const& t1 : Meta::makeIteratorRange(n1Transitions)) {
+                auto const& t1Label = t1.second.label();
+                auto t2 = n2.transition(*begin(t1Label));
 
                 // There is no equivalent transition in n2
                 if (!t2) {
@@ -105,21 +113,25 @@ public:
 
                 // The transition labels have mismatched lengths: they can't be
                 // equivalent.
-                if (std::ranges::size(t1Label) != std::ranges::size(t2Label)) {
+                if (size(t1Label) != size(t2Label)) {
                     return false;
                 }
 
-                auto const labelCompare =
-                    std::ranges::mismatch(t1Label, t2Label, compare);
+                auto const labelCompare = mismatch(
+                    begin(t1Label),
+                    end(t1Label),
+                    begin(t2Label),
+                    end(t2Label),
+                    compare);
 
                 // A mismatch occurred before the end of the labels comparison
-                if (std::ranges::end(t1Label) != labelCompare.in1 ||
-                    std::ranges::end(t2Label) != labelCompare.in2) {
+                if (end(t1Label) != labelCompare.first ||
+                    end(t2Label) != labelCompare.second) {
                     return false;
                 }
 
                 queue.emplace(std::make_pair(
-                    std::cref(*(t1.get())),
+                    std::cref(*(t1.second)),
                     std::cref(*((*t2).get()))));
             }
 

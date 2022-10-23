@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <ranges>
-
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
 #include "../../Concepts/Node.hpp"
 #include "../../Core/UnsafeTag.hpp"
@@ -30,19 +28,23 @@ public:
         typename Node::CharType expansion,
         NodeFactory&& makeNode) const
     {
-        if (std::ranges::empty(wordPath)) {
+        using std::begin;
+
+        using std::empty;
+        using std::size;
+
+        if (empty(wordPath)) {
             return std::make_tuple(!!node[expansion], std::ref(node));
         }
 
-        auto& t = mutableTransitionUnsafe(node, *std::ranges::begin(wordPath));
+        auto& t = mutableTransitionUnsafe(node, *begin(wordPath));
 
         auto const& label = t.label();
 
         // Since (node, wordPath) represents a state, wordPath is necessarily
         // strictly shorter than t's label.
-        assert(std::ranges::size(wordPath) < std::ranges::size(label));
-        if (*(std::ranges::begin(label) + std::ranges::size(wordPath)) ==
-            expansion) {
+        assert(size(wordPath) < size(label));
+        if (*(begin(label) + size(wordPath)) == expansion) {
             return std::make_tuple(true, std::ref(node));
         }
 
@@ -51,7 +53,7 @@ public:
         auto& newNode = Splitter(
             node,
             t,
-            std::ranges::size(wordPath),
+            size(wordPath),
             std::forward< NodeFactory >(makeNode));
 
         return std::make_tuple(false, std::ref(newNode));

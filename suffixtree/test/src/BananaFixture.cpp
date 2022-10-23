@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2022, Rerito
 // SPDX-License-Identifier: MIT
 
-#include <ranges>
+#include <iterator>
 
 #include <BananaFixture.hpp>
 
@@ -24,8 +24,8 @@ BananaFixture::BananaFixture()
     , n_ana_(_nodes.at(9))
     , n_anana_(_nodes.at(10))
 {
-    auto start = std::ranges::begin(_banana);
-    auto end = std::ranges::end(_banana);
+    auto start = std::begin(_banana);
+    auto end = std::end(_banana);
 
     addTransition(n_root, {start + 1, start + 2}, &n_a);
     addTransition(n_root, {start, end}, &n_banana_);

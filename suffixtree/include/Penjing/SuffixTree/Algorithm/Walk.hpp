@@ -5,9 +5,11 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
-#include <ranges>
 #include <tuple>
 #include <utility>
+
+#include <Penjing/Meta/DifferenceType.hpp>
+#include <Penjing/Meta/ValueType.hpp>
 
 #include "../Concepts/Node.hpp"
 #include "../Concepts/StringView.hpp"
@@ -25,7 +27,7 @@ private:
     static constexpr bool _isNoExcept()
     {
         return noexcept(std::declval< Root >().operator[](
-            std::declval< std::ranges::range_value_t< StrView > >()));
+            std::declval< Meta::ValueType< StrView > >()));
     }
 
 public:
@@ -34,15 +36,20 @@ public:
             Concepts::StringView< typename Node::StringType, StrView > &&
             std::convertible_to<
                 typename Node::CharType,
-                std::ranges::range_value_t< StrView > >
+                Meta::ValueType< StrView > >
     constexpr auto operator()(Node const& root, StrView word) const
     {
-        auto matchingNode = std::cref(root);
-        std::ranges::range_difference_t< StrView > matchingSize = 0;
+        using std::begin;
+        using std::empty;
+        using std::end;
+        using std::mismatch;
+        using std::size;
 
-        while (!std::ranges::empty(word)) {
-            auto const transition =
-                matchingNode.get()[*std::ranges::begin(word)];
+        auto matchingNode = std::cref(root);
+        Meta::DifferenceType< StrView > matchingSize = 0;
+
+        while (!empty(word)) {
+            auto const transition = matchingNode.get()[*begin(word)];
 
             // If there is no transition, it's a mismatch: the given word is
             // matched up to the explicit state (matchingNode, {}).
@@ -55,20 +62,21 @@ public:
 
             // Compare the transition label with the remainder of the word to
             // match...
-            auto mismatched = std::ranges::mismatch(label, word);
-            matchingSize = mismatched.in1 - std::ranges::begin(label);
+            auto mismatched =
+                mismatch(begin(label), end(label), begin(word), end(word));
+            matchingSize = mismatched.first - begin(label);
 
             // ... If a mismatch occured before the end of the label, the given
             // word is matched up to the implicit state:
             // (
             //     matchingNode,
-            //     matchingLabel={std::ranges::begin(label), mismatched.in1}
+            //     matchingLabel={begin(label), mismatched.in1}
             // ).
-            if (std::ranges::size(label) != matchingSize) {
+            if (size(label) != matchingSize) {
                 break;
             }
 
-            word = StrView(mismatched.in2, std::ranges::end(word));
+            word = StrView(mismatched.second, end(word));
 
             // Otherwise the target of the matching transition becomes the basis
             // for the walk.

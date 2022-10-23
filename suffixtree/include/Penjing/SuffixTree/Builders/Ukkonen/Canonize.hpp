@@ -5,7 +5,6 @@
 
 #include <cassert>
 #include <functional>
-#include <ranges>
 #include <tuple>
 
 #include "../../Concepts/Node.hpp"
@@ -30,42 +29,46 @@ public:
                      Concepts::StringView< typename Node::StringType, StrView >)
     constexpr auto operator()(Node const& node, StrView wordPath) const
     {
+        using std::begin;
+        using std::end;
+
+        using std::empty;
+        using std::size;
+
         auto canonicalNode = std::cref(node);
 
         // If the wordPath to follow is empty, the state is explicit
         // and therefore already canonical.
-        if (std::ranges::empty(wordPath)) {
+        if (empty(wordPath)) {
             return std::make_tuple(canonicalNode, wordPath);
         }
 
         // Otherwise, wordPath must be fast-walked to canonize the given state.
-        auto t = canonicalNode.get()[*std::ranges::begin(wordPath)];
+        auto t = canonicalNode.get()[*begin(wordPath)];
         assert(!!t);
 
         // As long as there is a transition with a matching begin, wordPath and
         // its label are sure to match up until:
         // min(size(wordPath), size(label)).
         // This is the "fast" walk, as there is no need to compare characters.
-        while (std::ranges::size((*t).get().label()) <=
-               std::ranges::size(wordPath)) {
+        while (size((*t).get().label()) <= size(wordPath)) {
 
             // Skim wordPath at the beginning of size(label) characters to
             // prepare for the next iteration
             wordPath = {
-                std::ranges::begin(wordPath) +
-                    std::ranges::size((*t).get().label()),
-                std::ranges::end(wordPath)};
+                begin(wordPath) + size((*t).get().label()),
+                end(wordPath)};
 
             canonicalNode = std::cref(*((*t).get()));
 
             // The wordPath has been fully walked down
-            if (std::ranges::empty(wordPath)) {
+            if (empty(wordPath)) {
                 break;
             }
 
             // Otherwise, there is necessarily an existing transition that
             // shares a common prefix with wordPath
-            t = canonicalNode.get()[*std::ranges::begin(wordPath)];
+            t = canonicalNode.get()[*begin(wordPath)];
             assert(!!t);
         }
 

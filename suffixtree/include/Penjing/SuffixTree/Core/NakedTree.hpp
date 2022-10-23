@@ -4,7 +4,9 @@
 #pragma once
 
 #include <memory>
-#include <ranges>
+
+#include <Penjing/Meta/DifferenceType.hpp>
+#include <Penjing/Meta/ValueType.hpp>
 
 #include <Penjing/Storage/Bindings/ArrayList.hpp>
 #include <Penjing/Storage/Bindings/StdUnorderedMap.hpp>
@@ -42,8 +44,8 @@ class NakedTree
 public:
     using StringType = Str;
     using StringViewType = StrView;
-    using CharType = std::ranges::range_value_t< Str >;
-    using DiffType = std::ranges::range_difference_t< Str >;
+    using CharType = Meta::ValueType< Str >;
+    using DiffType = Meta::DifferenceType< Str >;
     using NodeType = Node< Str, StrView, NodeTraits >;
     using NodeAllocator =
         std::allocator_traits< typename StorageTraits::AllocatorType >::

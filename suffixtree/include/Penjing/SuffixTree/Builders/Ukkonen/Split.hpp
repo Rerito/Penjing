@@ -5,7 +5,8 @@
 
 #include <cassert>
 #include <memory>
-#include <ranges>
+
+#include <Penjing/Meta/DifferenceType.hpp>
 
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
 
@@ -46,14 +47,18 @@ public:
     constexpr auto& operator()(
         Node& node,
         typename Node::TransitionType& branch,
-        std::ranges::range_difference_t< typename Node::StringViewType >
-            branchingPoint,
+        Meta::DifferenceType< typename Node::StringViewType > branchingPoint,
         NodeFactory&& factory) const
         noexcept(_isNoExcept< Node, NodeFactory >())
     {
         using StrView = typename Node::StringViewType;
 
-        assert(std::ranges::size(branch.label()) > branchingPoint);
+        using std::addressof;
+        using std::begin;
+        using std::end;
+        using std::size;
+
+        assert(size(branch.label()) > branchingPoint);
         assert(0 < branchingPoint);
 
         auto& newNode = std::forward< NodeFactory >(factory)(&node);
@@ -63,17 +68,13 @@ public:
         // Add the transition to the new node
         addTransition(
             newNode,
-            StrView{
-                std::ranges::begin(label) + branchingPoint,
-                std::ranges::end(label)},
+            StrView{begin(label) + branchingPoint, end(label)},
             target);
 
         // Now edit the existing transition so that it points to the new node
         // with a trimmed label.
-        label = {
-            std::ranges::begin(label),
-            std::ranges::begin(label) + branchingPoint};
-        target = std::addressof(newNode);
+        label = {begin(label), begin(label) + branchingPoint};
+        target = addressof(newNode);
 
         return newNode;
     }

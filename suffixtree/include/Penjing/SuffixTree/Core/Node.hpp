@@ -5,12 +5,12 @@
 
 #include <functional>
 #include <optional>
-#include <ranges>
 #include <stdexcept>
 
 #include <Penjing/Meta/Access.hpp>
 #include <Penjing/Meta/CustomizationPoints/Mapped.hpp>
 #include <Penjing/Meta/Memory.hpp>
+#include <Penjing/Meta/ValueType.hpp>
 
 #include "../Concepts/String.hpp"
 #include "../Concepts/StringView.hpp"
@@ -34,7 +34,7 @@ template< typename Str, typename StrView, typename NodeTraits >
 class Node
 {
 public:
-    using CharType = std::ranges::range_value_t< Str >;
+    using CharType = Meta::ValueType< Str >;
     using StringType = Str;
     using StringViewType = StrView;
     using NodePtr = std::add_pointer_t< Node >;
@@ -59,7 +59,8 @@ public:
     constexpr Node() = default;
     constexpr explicit Node(NodePtr parent)
         : _parent(std::move(parent))
-    {}
+    {
+    }
 
     constexpr std::optional< NodeConstRefW > parent() const
     {
@@ -89,23 +90,18 @@ public:
         return std::ref(*_suffixLink);
     }
 
-    constexpr auto transitions() const
-        noexcept(noexcept(Meta::mapped(_transitions)))
+    constexpr auto transitions() const noexcept
     {
-        return Meta::mapped(_transitions);
+        using std::begin;
+        using std::end;
+
+        return std::make_pair(begin(_transitions), end(_transitions));
     }
 
     constexpr auto childrenCount() const
-        noexcept(noexcept(std::ranges::size(_transitions)))
+        noexcept(noexcept(std::size(_transitions)))
     {
-        return std::ranges::size(_transitions);
-    }
-
-    constexpr auto
-        transitions(Meta::Access< Algorithm::MutatingNodeAlgorithm >) noexcept(
-            noexcept(mutableTransitions()))
-    {
-        return mutableTransitions();
+        return std::size(_transitions);
     }
 
     constexpr std::optional< TransitionConstRefW > transition(CharType start)
@@ -164,21 +160,17 @@ public:
     }
 
 private:
-    // non-const accessor kept private
-    constexpr auto mutableTransitions() noexcept(
-        noexcept(Meta::mapped(_transitions)))
-    {
-        return Meta::mapped(_transitions);
-    }
-
     constexpr TransitionRefW addTransition(StringViewType label, NodePtr target)
     {
-        if (std::ranges::empty(label)) {
+        using std::begin;
+        using std::empty;
+
+        if (empty(label)) {
             throw std::invalid_argument("label: expecting non empty label");
         }
 
         auto newTransition = _transitions.emplace(
-            *std::ranges::begin(label),
+            *begin(label),
             TransitionType{std::move(label), std::move(target)});
 
         if (newTransition.second) {

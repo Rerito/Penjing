@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <Penjing/Meta/DifferenceType.hpp>
+
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
 #include "../../Algorithm/Walk.hpp"
 
@@ -35,15 +37,20 @@ public:
         NodeFactory&& makeNode) const
         noexcept(_isNoExcept< Node, NodeFactory&& >())
     {
+        using std::begin;
+        using std::end;
+
+        using std::size;
+
         using StrView = typename Node::StringViewType;
-        using DiffType = std::ranges::range_difference_t< StrView >;
+        using DiffType = Meta::DifferenceType< StrView >;
 
         auto [initialActiveNode, toInsert, currentExpansion] =
             fetchActivePoint(root, word);
 
         auto activeNode = std::ref(initialActiveNode);
 
-        while (std::ranges::size(toInsert) > currentExpansion) {
+        while (size(toInsert) > currentExpansion) {
             StrView label{};
 
             // label is the proper view on the string for the next insertion
@@ -63,11 +70,11 @@ public:
             // suffix the label view with the remainder of the toInsert view.
             // This is possible because the implementation guarantees that label
             // and toInsert are contiguous views over the same string.
-            toInsert = {std::ranges::begin(label), std::ranges::end(toInsert)};
+            toInsert = {begin(label), end(toInsert)};
 
             // The current expansion for the next update call is marked by the
             // end of the label view.
-            currentExpansion = std::ranges::size(label);
+            currentExpansion = size(label);
             activeNode = std::ref(const_cast< Node& >(canonizedActiveNode));
         }
     }

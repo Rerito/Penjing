@@ -4,7 +4,8 @@
 #pragma once
 
 #include <functional>
-#include <ranges>
+
+#include <Penjing/Meta/DifferenceType.hpp>
 
 #include "../../Algorithm/MutatingNodeAlgorithm.hpp"
 #include "../../Concepts/Node.hpp"
@@ -31,10 +32,11 @@ public:
         Node& root,
         Node& node,
         typename Node::StringViewType const& wordPath,
-        std::ranges::range_difference_t< typename Node::StringViewType >
-            currentExpansion,
+        Meta::DifferenceType< typename Node::StringViewType > currentExpansion,
         NodeFactory&& makeNode) const
     {
+        using std::begin;
+        using std::end;
 
         using StrView = typename Node::StringViewType;
 
@@ -44,8 +46,8 @@ public:
         auto currentRef = std::ref(node);
         bool isEndPoint = true;
 
-        auto expansionIt = (std::ranges::begin(wordPath) + currentExpansion);
-        StrView expandingBranch{std::ranges::begin(wordPath), expansionIt};
+        auto expansionIt = (begin(wordPath) + currentExpansion);
+        StrView expandingBranch{begin(wordPath), expansionIt};
 
         auto const expansionChar = *expansionIt;
 
@@ -60,7 +62,7 @@ public:
             // Add that new branch to currentRef.
             addTransition(
                 currentRef.get(),
-                StrView{expansionIt, std::ranges::end(wordPath)},
+                StrView{expansionIt, end(wordPath)},
                 std::addressof(newState));
 
             // Update the suffix link of the previous expansion reference node.
@@ -96,7 +98,7 @@ public:
         return std::make_tuple(
             currentNode,
             StrView{
-                std::ranges::begin(expandingBranch) + advanceOnCanonize,
+                begin(expandingBranch) + advanceOnCanonize,
                 expansionIt + 1});
     }
 
@@ -104,8 +106,13 @@ private:
     template< typename StrView >
     constexpr StrView& advanceStringView(StrView& view) const noexcept
     {
-        if (!std::ranges::empty(view)) {
-            view = {std::ranges::begin(view) + 1, std::ranges::end(view)};
+        using std::begin;
+        using std::end;
+
+        using std::empty;
+
+        if (!empty(view)) {
+            view = {begin(view) + 1, end(view)};
         }
 
         return view;
@@ -118,10 +125,12 @@ private:
         typename Node::StringViewType wordPath,
         bool& advanceOnCanonize) const
     {
+        using std::empty;
+
         using StrView = typename Node::StringViewType;
         auto link = node.suffixLink();
 
-        advanceOnCanonize = !link && std::ranges::empty(wordPath);
+        advanceOnCanonize = !link && empty(wordPath);
         auto result = (link) ? Canonizer((*link).get(), wordPath)
                              : Canonizer(root, advanceStringView(wordPath));
 

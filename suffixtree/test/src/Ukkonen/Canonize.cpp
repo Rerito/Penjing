@@ -20,7 +20,7 @@ TEST_F(UkkonenCanonizeFixture, Explicit)
     auto [node, path] =
         Builders::Ukkonen::canonize(n_root, std::string_view{ana});
 
-    ASSERT_TRUE(std::ranges::empty(path));
+    ASSERT_TRUE(std::empty(path));
     ASSERT_EQ(&node, &n_ana);
 }
 
@@ -44,6 +44,6 @@ TEST_F(UkkonenCanonizeFixture, Deepest)
     auto [node, path] =
         Builders::Ukkonen::canonize(n_root, std::string_view{anana_});
 
-    ASSERT_TRUE(std::ranges::empty(path));
+    ASSERT_TRUE(std::empty(path));
     ASSERT_EQ(&node, &n_anana_);
 }

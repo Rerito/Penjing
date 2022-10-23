@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 
+#include <Penjing/Meta/MakeIteratorRange.hpp>
+
 #include <Penjing/SuffixTree/Concepts/Node.hpp>
 
 namespace Penjing {
@@ -22,13 +24,13 @@ private:
     {
         std::string whitespace(offset, ' ');
         auto transitions = node.transitions();
-        for (auto t : transitions) {
-            ostream << whitespace << "\\--[" << t.get().label() << "]-->o"
+        for (auto const& t : Meta::makeIteratorRange(transitions)) {
+            ostream << whitespace << "\\--[" << t.second.label() << "]-->o"
                     << std::endl;
             dump(
-                *(t.get()),
+                *(t.second),
                 ostream,
-                offset + 8 + std::ranges::size(t.get().label()));
+                offset + 8 + std::ranges::size(t.second.label()));
         }
     }
 

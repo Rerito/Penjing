@@ -24,11 +24,7 @@ TEST_F(UkkonenSplitFixture, InvalidBranchingPoint)
     ASSERT_TRUE(!!t);
     ASSERT_DEBUG_DEATH(Builders::Ukkonen::split(origin, *t, 0, factory), "");
     ASSERT_DEBUG_DEATH(
-        Builders::Ukkonen::split(
-            origin,
-            *t,
-            std::ranges::size(_banana),
-            factory),
+        Builders::Ukkonen::split(origin, *t, std::size(_banana), factory),
         "");
 }
 

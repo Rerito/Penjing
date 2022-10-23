@@ -1,8 +1,6 @@
 // Copyright (c) 2021, Rerito
 // SPDX-License-Identifier: MIT
 
-#include <ranges>
-
 #include <gtest/gtest.h>
 
 #include <Penjing/SuffixTree/Algorithm/Walk.hpp>
@@ -16,9 +14,7 @@ using WalkFixture = BananaFixture;
 
 TEST_F(WalkFixture, Walk)
 {
-    std::string_view anan = {
-        std::ranges::begin(_banana) + 1,
-        std::ranges::begin(_banana) + 5};
+    std::string_view anan = {std::begin(_banana) + 1, std::begin(_banana) + 5};
 
     auto [node, word, mismatchIdx] = Algorithm::walk(n_root, anan);
 
@@ -26,5 +22,5 @@ TEST_F(WalkFixture, Walk)
 
     // The string `anan` is a substring of `banana` so walk must have consumed
     // it entirely.
-    ASSERT_EQ(mismatchIdx, std::ranges::size(word));
+    ASSERT_EQ(mismatchIdx, std::size(word));
 }

@@ -19,13 +19,13 @@ private:
         requires(Concepts::HasStringStorage< Tree >)
     constexpr auto viewToInsert(Tree& tree, Args&&... args) const
     {
+        using std::begin;
+        using std::end;
         using StrView = typename Tree::StringViewType;
         auto const& newString =
             mutableStringStorage(tree).emplace(std::forward< Args >(args)...);
 
-        return StrView{
-            std::ranges::begin(newString),
-            std::ranges::end(newString)};
+        return StrView{begin(newString), end(newString)};
     }
 
     template< typename Tree >
