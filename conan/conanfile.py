@@ -12,7 +12,7 @@ class Penjing(ConanFile):
     topics = ("suffix-tree", "searching")
     generators = "cmake_find_package", "cmake_paths"
     # MSVC builds cannot be tested at this time so its support is disabled.
-    settings = {"build_type": None, "compiler": ["gcc", "clang"], "arch": None}
+    settings = {"build_type": None, "compiler": ["gcc", "clang", "Visual Studio"], "arch": None}
 
     def build(self):
         cmake = CMake(self)
